@@ -1,0 +1,30 @@
+{
+  "name": "@talk-to-a-folder/web",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "build": "next build",
+    "dev": "next dev --port 3000",
+    "start": "next start",
+    "typecheck": "tsc --noEmit",
+    "clean": "rm -rf .next",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@react-oauth/google": "^0.13.4",
+    "@talk-to-a-folder/shared": "workspace:*",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.2.1",
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "autoprefixer": "^10.4.27",
+    "postcss": "^8.5.8",
+    "tailwindcss": "^4.2.1",
+    "typescript": "^5.5.0"
+  }
+}
