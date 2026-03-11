@@ -6,6 +6,7 @@ import Groq from "groq-sdk";
 
 const EMBEDDING_MODEL = "text-embedding-3-small";
 const GROQ_MODEL = "groq/compound";
+const ROUTING_MODEL = "llama-3.1-8b-instant";
 const TOP_K = 8;
 
 interface RetrievedChunk {
@@ -48,61 +49,74 @@ export class ChatService {
   }
 
   /**
-   * Detect file names referenced in the user query by matching against known file names.
-   * Handles partial matches, ordinal references ("first file", "1st file", "file 3"), etc.
+   * Use a fast LLM to decide which files are relevant to the user's query.
+   * Returns an array of file names the query is about, or ALL file names
+   * if the query is broad (e.g. "summarize everything").
    */
-  private findReferencedFiles(query: string, sortedFileNames: string[]): string[] {
-    const q = query.toLowerCase();
-    const matched: string[] = [];
+  private async routeQueryToFiles(
+    query: string,
+    allFileNames: string[],
+  ): Promise<{ files: string[]; isAllFiles: boolean }> {
+    const fileList = allFileNames
+      .map((name, i) => `${i + 1}. ${name}`)
+      .join("\n");
 
-    // Ordinal word map
-    const ordinals: Record<string, number> = {
-      first: 1, second: 2, third: 3, fourth: 4, fifth: 5,
-      sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10,
-    };
+    try {
+      const response = await this.groq.chat.completions.create({
+        model: ROUTING_MODEL,
+        messages: [
+          {
+            role: "system",
+            content: `You are a file routing assistant. Given a user query and a list of files, determine which files are relevant.
 
-    // Check ordinal words: "first file", "second file", etc.
-    for (const [word, idx] of Object.entries(ordinals)) {
-      if (q.includes(word) && (q.includes("file") || q.includes("document"))) {
-        if (idx <= sortedFileNames.length) {
-          matched.push(sortedFileNames[idx - 1]!);
+Respond with ONLY a JSON object in this exact format:
+{"files": [1, 3, 5], "all": false}
+
+- "files": array of file NUMBERS (1-based) that the query is about
+- "all": true if the query is about ALL files (e.g. "summarize everything", "what's in the folder", "contents of all files")
+
+If the query is about all files, set "all": true and "files": [].
+If the query is about specific files, set "all": false and list the relevant file numbers.
+If unsure which files are relevant, include your best guesses.`,
+          },
+          {
+            role: "user",
+            content: `FILES:\n${fileList}\n\nQUERY: ${query}`,
+          },
+        ],
+        temperature: 0,
+        max_tokens: 256,
+      });
+
+      const raw = response.choices[0]?.message?.content?.trim() ?? "";
+      this.logger.log(`File routing response: ${raw}`);
+
+      // Parse the JSON response
+      const jsonMatch = raw.match(/\{[\s\S]*\}/);
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0]);
+        if (parsed.all === true) {
+          return { files: allFileNames, isAllFiles: true };
         }
+        const fileIndices: number[] = Array.isArray(parsed.files) ? parsed.files : [];
+        const selectedFiles = fileIndices
+          .filter((idx: number) => idx >= 1 && idx <= allFileNames.length)
+          .map((idx: number) => allFileNames[idx - 1]!);
+        return { files: [...new Set(selectedFiles)], isAllFiles: false };
       }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : String(err);
+      this.logger.warn(`File routing LLM call failed, falling back to similarity only: ${message}`);
     }
 
-    // Check numeric ordinals: "1st", "2nd", "3rd", "4th", "file 1", "file #2", etc.
-    const numericPatterns = [
-      /(\d+)(?:st|nd|rd|th)\s*(?:file|document)/gi,
-      /(?:file|document)\s*#?\s*(\d+)/gi,
-    ];
-    for (const pattern of numericPatterns) {
-      let m;
-      while ((m = pattern.exec(q)) !== null) {
-        const idx = parseInt(m[1]!, 10);
-        if (idx >= 1 && idx <= sortedFileNames.length) {
-          matched.push(sortedFileNames[idx - 1]!);
-        }
-      }
-    }
-
-    // Check direct file name matches (partial, case-insensitive)
-    for (const name of sortedFileNames) {
-      const nameLower = name.toLowerCase();
-      // Strip extension for matching
-      const nameNoExt = nameLower.replace(/\.[^.]+$/, "");
-      // Match if the query contains the file name or a significant portion of it
-      if (q.includes(nameLower) || q.includes(nameNoExt)) {
-        matched.push(name);
-      }
-    }
-
-    return [...new Set(matched)];
+    // Fallback: no supplemental files
+    return { files: [], isAllFiles: false };
   }
 
   /**
    * Retrieve relevant chunks from ChromaDB, filtered by folderId.
-   * Supplements similarity results with file-targeted chunks when the query
-   * references specific files.
+   * Uses an LLM routing step to determine which files the query is about,
+   * then supplements similarity results with targeted chunks from those files.
    */
   async retrieve(query: string, folderId: string, allFileNames?: string[]): Promise<RetrievedChunk[]> {
     const queryEmbedding = await this.embedQuery(query);
@@ -124,7 +138,6 @@ export class ChatService {
       const meta = metas[i];
       if (!doc || !meta) continue;
 
-      // ChromaDB returns L2 distances; convert to a 0-1 similarity score
       const distance = distances[i] ?? 0;
       const score = 1 / (1 + distance);
 
@@ -142,18 +155,31 @@ export class ChatService {
       });
     }
 
-    // Supplement with file-targeted retrieval when the query references specific files
+    // Use LLM routing to determine which files the query targets
     if (allFileNames && allFileNames.length > 0) {
-      const referencedFiles = this.findReferencedFiles(query, allFileNames);
-      if (referencedFiles.length > 0) {
-        this.logger.log(`Detected file references: ${referencedFiles.join(", ")}`);
+      const { files: targetFiles, isAllFiles } = await this.routeQueryToFiles(query, allFileNames);
+
+      if (targetFiles.length > 0) {
+        this.logger.log(
+          isAllFiles
+            ? `LLM router: broad query – fetching chunks from all ${targetFiles.length} files`
+            : `LLM router: targeted files – ${targetFiles.join(", ")}`,
+        );
+
+        const existingFileNames = new Set(chunks.map((c) => c.metadata.fileName));
         const existingChunkIds = new Set(
           chunks.map((c) => `${c.metadata.fileId}_${c.metadata.chunkIndex}`),
         );
 
-        for (const fileName of referencedFiles) {
+        for (const fileName of targetFiles) {
+          // For broad queries, skip files we already have chunks for
+          if (isAllFiles && existingFileNames.has(fileName)) continue;
+
           const fileChunks = await this.chromaDbService.getChunksByFileName(folderId, fileName);
-          for (let i = 0; i < fileChunks.documents.length; i++) {
+          // For broad queries, limit to first chunk per file to stay within context limits
+          const limit = isAllFiles ? 1 : fileChunks.documents.length;
+
+          for (let i = 0; i < Math.min(limit, fileChunks.documents.length); i++) {
             const doc = fileChunks.documents[i];
             const meta = fileChunks.metadatas[i];
             if (!doc || !meta) continue;
@@ -172,7 +198,7 @@ export class ChatService {
                 mimeType: String(meta["mimeType"] ?? ""),
                 chunkIndex: Number(meta["chunkIndex"] ?? 0),
               },
-              score: 0.9, // High score since explicitly requested
+              score: 0.9,
             });
           }
         }
