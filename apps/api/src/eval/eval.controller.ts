@@ -9,11 +9,18 @@ import {
   BadRequestException,
   Logger,
 } from "@nestjs/common";
-import type { Response } from "express";
+import type { Request, Response } from "express";
+import { z } from "zod";
 import { EvalService } from "./eval.service";
 import { AuthGuard, type AuthenticatedRequest } from "../auth/auth.guard";
 import { FoldersService } from "../folders/folders.service";
 import type { EvalTestCase } from "@talk-to-a-folder/shared";
+
+/** Zod schema for the POST /eval/run request body. */
+const EvalRunRequestSchema = z.object({
+  folderId: z.string().min(1, "folderId is required"),
+  testIds: z.array(z.string().min(1)).optional(),
+});
 
 @Controller("eval")
 export class EvalController {
@@ -35,15 +42,18 @@ export class EvalController {
   @Post("run")
   @UseGuards(AuthGuard)
   async run(
-    @Body() body: { folderId: string; testIds?: string[] },
+    @Body() body: unknown,
     @Req() req: AuthenticatedRequest,
     @Res() res: Response,
   ): Promise<void> {
-    const { folderId, testIds } = body;
-    if (!folderId) {
-      throw new BadRequestException("folderId is required");
+    const parsed = EvalRunRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      throw new BadRequestException(
+        `Invalid eval run request: ${parsed.error.message}`,
+      );
     }
 
+    const { folderId, testIds } = parsed.data;
     const accessToken = req.session.googleToken.accessToken;
     const userEmail = req.session.email;
 
@@ -58,11 +68,22 @@ export class EvalController {
     res.setHeader("Transfer-Encoding", "chunked");
     res.setHeader("Cache-Control", "no-cache");
 
+    // Track client disconnection so we can abort remaining tests
+    let clientDisconnected = false;
+    (req as unknown as Request).on("close", () => {
+      clientDisconnected = true;
+      this.logger.log("Client disconnected — aborting eval stream");
+    });
+
     const stream = this.evalService.streamResults(
       folderId, accessToken, allFileNames, userEmail, testIds,
     );
 
     for await (const result of stream) {
+      if (clientDisconnected) {
+        this.logger.log("Stopping eval stream — client disconnected");
+        break;
+      }
       res.write(JSON.stringify(result) + "\n");
     }
 

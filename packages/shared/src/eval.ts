@@ -90,34 +90,5 @@ export const EvalTestResultSchema = z.object({
 
 export type EvalTestResult = z.infer<typeof EvalTestResultSchema>;
 
-// ---------------------------------------------------------------------------
-// Eval run – a complete eval session
-// ---------------------------------------------------------------------------
 
-export const EvalRunSchema = z.object({
-  /** When the eval started */
-  startedAt: z.string(),
-  /** Total tests */
-  totalTests: z.number(),
-  /** Passed tests */
-  passedTests: z.number(),
-  /** Failed tests */
-  failedTests: z.number(),
-  /** Per-category summary */
-  categories: z.record(z.object({
-    total: z.number(),
-    passed: z.number(),
-  })),
-  /** Individual results */
-  results: z.array(EvalTestResultSchema),
-  /** Average LLM judge scores across tests that had judging */
-  averageJudgeScores: z.object({
-    correctness: z.number(),
-    faithfulness: z.number(),
-    completeness: z.number(),
-    judgedCount: z.number(),
-  }).optional(),
-});
-
-export type EvalRun = z.infer<typeof EvalRunSchema>;
 

@@ -4,8 +4,6 @@ import type {
   EvalTestCase,
   EvalTestResult,
   EvalAssertionResult,
-  EvalRun,
-  ChatStreamEvent,
   FileActionResult,
   Citation,
 } from "@talk-to-a-folder/shared";
@@ -13,6 +11,8 @@ import { EVAL_TESTS } from "./eval-tests";
 import OpenAI from "openai";
 
 const JUDGE_MODEL = "gpt-4o";
+/** Timeout for the OpenAI judge API call (30 seconds). */
+const JUDGE_TIMEOUT_MS = 30_000;
 
 interface JudgeScores {
   correctness: number;
@@ -24,12 +24,18 @@ interface JudgeScores {
 @Injectable()
 export class EvalService {
   private readonly logger = new Logger(EvalService.name);
-  private readonly openai: OpenAI;
+  private readonly openai: OpenAI | null;
 
   constructor(private readonly chatService: ChatService) {
-    this.openai = new OpenAI({
-      apiKey: process.env["OPENAI_API_KEY"] ?? "",
-    });
+    const apiKey = process.env["OPENAI_API_KEY"];
+    if (!apiKey) {
+      this.logger.warn(
+        "OPENAI_API_KEY is not set — LLM judge scoring will be skipped for all eval tests",
+      );
+      this.openai = null;
+    } else {
+      this.openai = new OpenAI({ apiKey });
+    }
   }
 
   /** Get all built-in test cases. */
@@ -74,9 +80,9 @@ export class EvalService {
       const assertionResults = this.checkAssertions(test, answer, citations, fileActions);
       const passed = assertionResults.every((a) => a.passed);
 
-      // Run LLM judge if test has an idealAnswer
+      // Run LLM judge if test has an idealAnswer and OpenAI is configured
       let judgeScores: JudgeScores | undefined;
-      if (test.idealAnswer) {
+      if (test.idealAnswer && this.openai) {
         try {
           judgeScores = await this.runJudge(test, answer, citations);
         } catch (err) {
@@ -161,12 +167,15 @@ Score these three dimensions (1 = worst, 5 = best):
 
 Respond with ONLY a JSON object: {"correctness": <1-5>, "faithfulness": <1-5>, "completeness": <1-5>, "reason": "<brief explanation of scores>"}`;
 
-    const res = await this.openai.chat.completions.create({
-      model: JUDGE_MODEL,
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0,
-      response_format: { type: "json_object" },
-    });
+    const res = await this.openai!.chat.completions.create(
+      {
+        model: JUDGE_MODEL,
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0,
+        response_format: { type: "json_object" },
+      },
+      { timeout: JUDGE_TIMEOUT_MS },
+    );
 
     const content = res.choices[0]?.message?.content ?? "{}";
     const scores = JSON.parse(content) as JudgeScores;

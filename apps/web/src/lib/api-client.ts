@@ -241,13 +241,22 @@ export async function runEvalStream(
     for (const line of lines) {
       const trimmed = line.trim();
       if (!trimmed) continue;
-      onResult(JSON.parse(trimmed));
+      try {
+        onResult(JSON.parse(trimmed));
+      } catch {
+        console.warn("[runEvalStream] Skipping malformed NDJSON line:", trimmed);
+      }
     }
   }
 
   // Process any remaining buffer
-  if (buffer.trim()) {
-    onResult(JSON.parse(buffer.trim()));
+  const remaining = buffer.trim();
+  if (remaining) {
+    try {
+      onResult(JSON.parse(remaining));
+    } catch {
+      console.warn("[runEvalStream] Skipping malformed trailing NDJSON:", remaining);
+    }
   }
 }
 

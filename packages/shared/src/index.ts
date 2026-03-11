@@ -61,8 +61,6 @@ export {
   type EvalAssertionResult,
   EvalTestResultSchema,
   type EvalTestResult,
-  EvalRunSchema,
-  type EvalRun,
 } from "./eval.js";
 
 export {
