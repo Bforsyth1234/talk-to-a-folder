@@ -1,0 +1,51 @@
+[
+  {
+    "question": "What is the main purpose of the project?",
+    "ideal_answer": "The project enables users to ingest Google Drive folder contents into a local RAG index and chat with those documents through a citation-backed interface.",
+    "expected_context": [
+      "RAG",
+      "Google Drive",
+      "chat",
+      "citation"
+    ]
+  },
+  {
+    "question": "How are documents stored after ingestion?",
+    "ideal_answer": "Documents are chunked and stored in ChromaDB with metadata including fileName, fileId, googleDriveLink, folderId, mimeType, and chunkIndex.",
+    "expected_context": [
+      "ChromaDB",
+      "chunk",
+      "metadata",
+      "embedding"
+    ]
+  },
+  {
+    "question": "What embedding model is used for document retrieval?",
+    "ideal_answer": "The system uses OpenAI's text-embedding-3-small model for generating embeddings during both ingestion and query time.",
+    "expected_context": [
+      "text-embedding-3-small",
+      "OpenAI",
+      "embedding"
+    ]
+  },
+  {
+    "question": "How does the chat system ensure answers are grounded in the provided documents?",
+    "ideal_answer": "The system prompt instructs the LLM to answer ONLY based on the retrieved context documents and to clearly state when information is not available in the context.",
+    "expected_context": [
+      "context",
+      "system prompt",
+      "retrieved"
+    ]
+  },
+  {
+    "question": "What authentication method is used to access Google Drive?",
+    "ideal_answer": "The application uses Google OAuth 2.0 with the drive.readonly scope to authenticate users and obtain access tokens for reading Drive contents.",
+    "expected_context": [
+      "OAuth",
+      "Google",
+      "drive.readonly",
+      "token"
+    ]
+  }
+]
+
