@@ -3,6 +3,9 @@
 import { useGoogleLogin } from "@react-oauth/google";
 import { useAuth } from "@/lib/auth-context";
 
+const GOOGLE_CLIENT_ID =
+  process.env["NEXT_PUBLIC_GOOGLE_CLIENT_ID"] ?? "";
+
 const SCOPES = [
   "openid",
   "email",
@@ -10,7 +13,7 @@ const SCOPES = [
   "https://www.googleapis.com/auth/drive.readonly",
 ].join(" ");
 
-export function SignInButton() {
+function ConfiguredSignInButton() {
   const { handleAuthCallback, isLoading } = useAuth();
 
   const login = useGoogleLogin({
@@ -56,5 +59,19 @@ export function SignInButton() {
       {isLoading ? "Signing in…" : "Sign in with Google"}
     </button>
   );
+}
+
+export function SignInButton() {
+  if (!GOOGLE_CLIENT_ID) {
+    return (
+      <div className="w-full rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+        Google sign-in is not configured. Set
+        {" "}<code>NEXT_PUBLIC_GOOGLE_CLIENT_ID</code>{" "}
+        on the Railway web service, then redeploy.
+      </div>
+    );
+  }
+
+  return <ConfiguredSignInButton />;
 }
 

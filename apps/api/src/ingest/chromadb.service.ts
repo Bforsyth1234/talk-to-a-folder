@@ -1,5 +1,5 @@
 import { Injectable, Logger, OnModuleInit } from "@nestjs/common";
-import { ChromaClient, type Collection } from "chromadb";
+import { ChromaClient, type ChromaClientArgs, type Collection } from "chromadb";
 
 /** Metadata stored alongside each chunk in ChromaDB. */
 export interface ChunkMetadata {
@@ -13,6 +13,35 @@ export interface ChunkMetadata {
 
 const COLLECTION_NAME = "drive_chunks";
 
+function getChromaUrl(): string {
+  return (
+    process.env["CHROMA_URL"] ??
+    process.env["CHROMA_HOST"] ??
+    "http://localhost:8000"
+  );
+}
+
+function getChromaClientArgs(chromaUrl: string): ChromaClientArgs {
+  let parsedUrl: URL;
+
+  try {
+    parsedUrl = new URL(chromaUrl);
+  } catch {
+    throw new Error(
+      `Invalid Chroma URL: ${chromaUrl}. Set CHROMA_URL (or CHROMA_HOST) to a valid URL such as http://localhost:8000.`,
+    );
+  }
+
+  const defaultPort = parsedUrl.protocol === "https:" ? 443 : 8000;
+  const port = Number(parsedUrl.port || defaultPort);
+
+  return {
+    host: parsedUrl.hostname,
+    port,
+    ssl: parsedUrl.protocol === "https:",
+  };
+}
+
 @Injectable()
 export class ChromaDbService implements OnModuleInit {
   private readonly logger = new Logger(ChromaDbService.name);
@@ -20,14 +49,24 @@ export class ChromaDbService implements OnModuleInit {
   private collection!: Collection;
 
   async onModuleInit(): Promise<void> {
-    const host = process.env["CHROMA_HOST"] ?? "http://localhost:8000";
-    this.client = new ChromaClient({ path: host });
-    this.collection = await this.client.getOrCreateCollection({
-      name: COLLECTION_NAME,
-    });
-    this.logger.log(
-      `ChromaDB collection "${COLLECTION_NAME}" ready`,
-    );
+    const chromaUrl = getChromaUrl();
+
+    try {
+      this.client = new ChromaClient(getChromaClientArgs(chromaUrl));
+      this.collection = await this.client.getOrCreateCollection({
+        name: COLLECTION_NAME,
+        embeddingFunction: null,
+      });
+      this.logger.log(
+        `ChromaDB collection "${COLLECTION_NAME}" ready at ${chromaUrl}`,
+      );
+    } catch (error) {
+      this.logger.error(`Failed to connect to ChromaDB at ${chromaUrl}`);
+      throw new Error(
+        `Failed to connect to ChromaDB at ${chromaUrl}. Set CHROMA_URL (or CHROMA_HOST) to a running Chroma service.`,
+        { cause: error },
+      );
+    }
   }
 
   /**

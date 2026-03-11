@@ -1,100 +1,84 @@
 import { Injectable, Logger } from "@nestjs/common";
 import type { SavedFolder } from "@talk-to-a-folder/shared";
-import { readFileSync, writeFileSync, existsSync, mkdirSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { DatabaseService } from "../database/database.service";
 import { randomUUID } from "node:crypto";
 
-/** Simple JSON-file-backed store for saved folders, keyed by user email. */
-const DATA_DIR = join(process.cwd(), ".data");
-const DATA_FILE = join(DATA_DIR, "saved-folders.json");
-
-type Store = Record<string, SavedFolder[]>;
+interface FolderRow {
+  id: string;
+  user_email: string;
+  folder_id: string;
+  name: string;
+  file_count: number;
+  saved_at: string;
+}
 
 @Injectable()
 export class FoldersService {
   private readonly logger = new Logger(FoldersService.name);
-  private store: Store;
 
-  constructor() {
-    this.store = this.load();
-  }
+  constructor(private readonly databaseService: DatabaseService) {}
 
-  private load(): Store {
-    try {
-      if (existsSync(DATA_FILE)) {
-        return JSON.parse(readFileSync(DATA_FILE, "utf-8")) as Store;
-      }
-    } catch (err) {
-      this.logger.warn(`Failed to load saved folders: ${err}`);
-    }
-    return {};
-  }
-
-  private persist(): void {
-    try {
-      if (!existsSync(dirname(DATA_FILE))) {
-        mkdirSync(dirname(DATA_FILE), { recursive: true });
-      }
-      writeFileSync(DATA_FILE, JSON.stringify(this.store, null, 2), "utf-8");
-    } catch (err) {
-      this.logger.error(`Failed to persist saved folders: ${err}`);
-    }
+  private toSavedFolder(row: FolderRow): SavedFolder {
+    return {
+      id: row.id,
+      folderId: row.folder_id,
+      name: row.name,
+      fileCount: row.file_count,
+      savedAt: row.saved_at,
+    };
   }
 
   /** List all saved folders for a user. */
   list(userEmail: string): SavedFolder[] {
-    return this.store[userEmail] ?? [];
+    const db = this.databaseService.getDb();
+    const rows = db
+      .prepare("SELECT * FROM saved_folders WHERE user_email = ? ORDER BY saved_at DESC")
+      .all(userEmail) as FolderRow[];
+    return rows.map((r) => this.toSavedFolder(r));
   }
 
-  /** Save a folder for a user. Deduplicates by folderId. */
+  /** Save a folder for a user. Upserts by (user_email, folder_id). */
   save(
     userEmail: string,
     folderId: string,
     name: string,
     fileCount: number,
   ): SavedFolder {
-    if (!this.store[userEmail]) {
-      this.store[userEmail] = [];
-    }
+    const db = this.databaseService.getDb();
+    const now = new Date().toISOString();
 
-    // Update existing entry if same folderId
-    const existing = this.store[userEmail]!.find(
-      (f) => f.folderId === folderId,
-    );
+    // Try to update first
+    const existing = db
+      .prepare("SELECT * FROM saved_folders WHERE user_email = ? AND folder_id = ?")
+      .get(userEmail, folderId) as FolderRow | undefined;
+
     if (existing) {
-      existing.name = name;
-      existing.fileCount = fileCount;
-      existing.savedAt = new Date().toISOString();
-      this.persist();
-      return existing;
+      db.prepare(
+        "UPDATE saved_folders SET name = ?, file_count = ?, saved_at = ? WHERE id = ?",
+      ).run(name, fileCount, now, existing.id);
+      return this.toSavedFolder({ ...existing, name, file_count: fileCount, saved_at: now });
     }
 
-    const folder: SavedFolder = {
-      id: randomUUID(),
-      folderId,
-      name,
-      fileCount,
-      savedAt: new Date().toISOString(),
-    };
+    const id = randomUUID();
+    db.prepare(
+      "INSERT INTO saved_folders (id, user_email, folder_id, name, file_count, saved_at) VALUES (?, ?, ?, ?, ?, ?)",
+    ).run(id, userEmail, folderId, name, fileCount, now);
 
-    this.store[userEmail]!.push(folder);
-    this.persist();
     this.logger.log(`Saved folder ${folderId} for ${userEmail}`);
-    return folder;
+    return { id, folderId, name, fileCount, savedAt: now };
   }
 
   /** Delete a saved folder by its record id. Returns true if found and deleted. */
   delete(userEmail: string, id: string): boolean {
-    const folders = this.store[userEmail];
-    if (!folders) return false;
-
-    const idx = folders.findIndex((f) => f.id === id);
-    if (idx === -1) return false;
-
-    folders.splice(idx, 1);
-    this.persist();
-    this.logger.log(`Deleted saved folder ${id} for ${userEmail}`);
-    return true;
+    const db = this.databaseService.getDb();
+    const result = db
+      .prepare("DELETE FROM saved_folders WHERE id = ? AND user_email = ?")
+      .run(id, userEmail);
+    if (result.changes > 0) {
+      this.logger.log(`Deleted saved folder ${id} for ${userEmail}`);
+      return true;
+    }
+    return false;
   }
 }
 
