@@ -12,12 +12,16 @@ import type { Response } from "express";
 import { ChatService } from "./chat.service";
 import { AuthGuard, type AuthenticatedRequest } from "../auth/auth.guard";
 import { ChatRequestSchema } from "@talk-to-a-folder/shared";
+import { FoldersService } from "../folders/folders.service";
 
 @Controller("chat")
 export class ChatController {
   private readonly logger = new Logger(ChatController.name);
 
-  constructor(private readonly chatService: ChatService) {}
+  constructor(
+    private readonly chatService: ChatService,
+    private readonly foldersService: FoldersService,
+  ) {}
 
   /**
    * POST /chat
@@ -44,6 +48,10 @@ export class ChatController {
       `Chat request from ${req.session.email} for folder ${folderId}`,
     );
 
+    // Look up saved folder to get allFileNames (includes unsupported files)
+    const savedFolder = this.foldersService.findByFolderId(req.session.email, folderId);
+    const allFileNames = savedFolder?.allFileNames;
+
     // Set headers for newline-delimited JSON streaming
     res.setHeader("Content-Type", "application/x-ndjson");
     res.setHeader("Cache-Control", "no-cache");
@@ -55,6 +63,7 @@ export class ChatController {
         message,
         folderId,
         history,
+        allFileNames,
       )) {
         res.write(JSON.stringify(event) + "\n");
       }

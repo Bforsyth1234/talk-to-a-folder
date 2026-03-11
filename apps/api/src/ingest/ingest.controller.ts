@@ -42,6 +42,7 @@ export class IngestController {
       result.folderId,
       parsed.data.folderId, // preserve original input (URL or ID) as name
       result.processedFiles,
+      result.allFileNames,
     );
 
     return result;

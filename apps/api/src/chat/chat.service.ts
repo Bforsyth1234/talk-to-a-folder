@@ -241,8 +241,11 @@ INSTRUCTIONS:
     message: string,
     folderId: string,
     history?: { role: "user" | "assistant"; content: string }[],
+    savedAllFileNames?: string[],
   ): AsyncGenerator<ChatStreamEvent> {
-    const allFileNames = await this.chromaDbService.getAllFileNames(folderId);
+    // Use saved allFileNames (includes unsupported files) if available,
+    // otherwise fall back to ChromaDB (ingested files only)
+    const allFileNames = savedAllFileNames ?? await this.chromaDbService.getAllFileNames(folderId);
     const chunks = await this.retrieve(message, folderId, allFileNames);
     const citations = this.buildCitations(chunks);
 

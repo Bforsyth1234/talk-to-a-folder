@@ -12,6 +12,8 @@ export const SavedFolderSchema = z.object({
   name: z.string(),
   /** Number of files processed during last sync */
   fileCount: z.number().int().nonnegative(),
+  /** All file names from the Drive folder (including unsupported ones) */
+  allFileNames: z.array(z.string()).optional(),
   /** ISO timestamp of when the folder was saved */
   savedAt: z.string(),
 });

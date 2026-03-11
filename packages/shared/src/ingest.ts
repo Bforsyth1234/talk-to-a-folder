@@ -34,6 +34,8 @@ export const IngestResponseSchema = z.object({
   skippedFiles: z.number().int().nonnegative(),
   errorFiles: z.number().int().nonnegative(),
   files: z.array(IngestedFileSchema),
+  /** All file names from the Drive folder (including unsupported ones) */
+  allFileNames: z.array(z.string()).optional(),
 });
 
 export type IngestResponse = z.infer<typeof IngestResponseSchema>;

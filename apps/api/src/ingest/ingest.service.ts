@@ -71,6 +71,7 @@ export class IngestService {
       skippedFiles: fileResults.filter((f) => f.status === "skipped").length,
       errorFiles: fileResults.filter((f) => f.status === "error").length,
       files: fileResults,
+      allFileNames: listing.allFileNames,
     };
 
     this.logger.log(

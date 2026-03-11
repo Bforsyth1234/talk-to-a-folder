@@ -18,6 +18,7 @@ export class FoldersService {
     folderId: string,
     name: string,
     fileCount: number,
+    allFileNames?: string[],
   ): SavedFolder {
     const now = new Date().toISOString();
     const existing = this.list(userEmail).find((folder) => folder.folderId === folderId);
@@ -26,10 +27,16 @@ export class FoldersService {
       folderId,
       name,
       fileCount,
+      allFileNames,
       savedAt: now,
     };
 
     return this.databaseService.saveSavedFolder(userEmail, savedFolder);
+  }
+
+  /** Find a saved folder by Google Drive folder ID for a user. */
+  findByFolderId(userEmail: string, folderId: string): SavedFolder | undefined {
+    return this.list(userEmail).find((folder) => folder.folderId === folderId);
   }
 
   /** Delete a saved folder by its record id. Returns true if found and deleted. */
