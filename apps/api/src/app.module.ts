@@ -6,9 +6,10 @@ import { ChatModule } from "./chat/chat.module";
 import { DatabaseModule } from "./database/database.module";
 import { FoldersModule } from "./folders/folders.module";
 import { FilesModule } from "./files/files.module";
+import { EvalModule } from "./eval/eval.module";
 
 @Module({
-  imports: [DatabaseModule, AuthModule, IngestModule, ChatModule, FoldersModule, FilesModule],
+  imports: [DatabaseModule, AuthModule, IngestModule, ChatModule, FoldersModule, FilesModule, EvalModule],
   controllers: [AppController],
 })
 export class AppModule {}

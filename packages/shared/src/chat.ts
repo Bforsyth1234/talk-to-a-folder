@@ -45,6 +45,7 @@ export const FileActionResultSchema = z.object({
   fileId: z.string().optional(),
   error: z.string().optional(),
   googleDriveLink: z.string().optional(),
+  mimeType: z.string().optional(),
 });
 
 export type FileActionResult = z.infer<typeof FileActionResultSchema>;

@@ -47,6 +47,18 @@ export class DriveService {
   }
 
   /**
+   * Get the display name of a Drive folder by its ID.
+   */
+  async getFolderName(folderId: string, accessToken: string): Promise<string> {
+    const drive = this.buildDriveClient(accessToken);
+    const res = await drive.files.get({
+      fileId: folderId,
+      fields: "name",
+    });
+    return res.data.name ?? folderId;
+  }
+
+  /**
    * List all supported files in a Drive folder (non-recursive, single level).
    */
   async listFiles(

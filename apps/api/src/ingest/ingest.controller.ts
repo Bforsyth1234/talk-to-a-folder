@@ -1,6 +1,7 @@
 import { Body, Controller, Post, Req, UseGuards } from "@nestjs/common";
 import { IngestService } from "./ingest.service";
 import { FoldersService } from "../folders/folders.service";
+import { DriveService } from "./drive.service";
 import { AuthGuard, type AuthenticatedRequest } from "../auth/auth.guard";
 import {
   IngestRequestSchema,
@@ -13,6 +14,7 @@ export class IngestController {
   constructor(
     private readonly ingestService: IngestService,
     private readonly foldersService: FoldersService,
+    private readonly driveService: DriveService,
   ) {}
 
   /**
@@ -36,11 +38,19 @@ export class IngestController {
     const accessToken = req.session.googleToken.accessToken;
     const result = await this.ingestService.ingestFolder(parsed.data.folderId, accessToken);
 
+    // Fetch actual folder name from Google Drive
+    let folderName: string;
+    try {
+      folderName = await this.driveService.getFolderName(result.folderId, accessToken);
+    } catch {
+      folderName = result.folderId;
+    }
+
     // Auto-save the folder for the user
     this.foldersService.save(
       req.session.email,
       result.folderId,
-      parsed.data.folderId, // preserve original input (URL or ID) as name
+      folderName,
       result.processedFiles,
       result.allFileNames,
     );

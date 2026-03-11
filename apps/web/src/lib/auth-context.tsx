@@ -61,13 +61,16 @@ function saveSession(session: Session | null) {
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<AuthState>({
     session: null,
-    isLoading: false,
+    isLoading: true,
   });
 
   // Hydrate from localStorage on mount, then validate against the backend.
   useEffect(() => {
     const saved = loadSession();
-    if (!saved) return;
+    if (!saved) {
+      setState({ session: null, isLoading: false });
+      return;
+    }
 
     // Optimistically show the saved session while we verify it.
     setState({ session: saved, isLoading: true });

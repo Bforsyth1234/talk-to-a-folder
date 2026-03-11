@@ -55,6 +55,17 @@ export {
 } from "./folder.js";
 
 export {
+  EvalTestCaseSchema,
+  type EvalTestCase,
+  EvalAssertionResultSchema,
+  type EvalAssertionResult,
+  EvalTestResultSchema,
+  type EvalTestResult,
+  EvalRunSchema,
+  type EvalRun,
+} from "./eval.js";
+
+export {
   DriveFileInfoSchema,
   type DriveFileInfo,
   CreateFileRequestSchema,

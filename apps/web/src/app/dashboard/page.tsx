@@ -13,7 +13,7 @@ type SyncState =
   | { status: "error"; message: string };
 
 export default function DashboardPage() {
-  const { session, signOut, accessToken } = useAuth();
+  const { session, signOut, accessToken, isLoading } = useAuth();
   const router = useRouter();
   const [folderInput, setFolderInput] = useState("");
   const [syncState, setSyncState] = useState<SyncState>({ status: "idle" });
@@ -31,10 +31,10 @@ export default function DashboardPage() {
   }, [accessToken]);
 
   useEffect(() => {
-    if (!session) {
+    if (!isLoading && !session) {
       router.replace("/");
     }
-  }, [session, router]);
+  }, [session, isLoading, router]);
 
   useEffect(() => {
     void loadFolders();
@@ -89,6 +89,9 @@ export default function DashboardPage() {
             📁 Talk to a Folder
           </h1>
           <div className="flex items-center gap-3">
+            <a href="/eval" className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50">
+              🧪 Evals
+            </a>
             {session.picture && (
               /* eslint-disable-next-line @next/next/no-img-element */
               <img
@@ -482,6 +485,19 @@ function ChatSection({
 // File Action Pill
 // ---------------------------------------------------------------------------
 
+function getEmbedUrl(fileId: string, mimeType?: string): string {
+  if (mimeType?.includes("document") || mimeType?.includes("google-apps.document")) {
+    return `https://docs.google.com/document/d/${fileId}/preview`;
+  }
+  if (mimeType?.includes("spreadsheet")) {
+    return `https://docs.google.com/spreadsheets/d/${fileId}/preview`;
+  }
+  if (mimeType?.includes("presentation")) {
+    return `https://docs.google.com/presentation/d/${fileId}/preview`;
+  }
+  return `https://drive.google.com/file/d/${fileId}/preview`;
+}
+
 function FileActionPill({ result }: { result: FileActionResult }) {
   const actionLabels: Record<string, string> = {
     create_file: "Created",
@@ -493,31 +509,44 @@ function FileActionPill({ result }: { result: FileActionResult }) {
   };
   const label = actionLabels[result.action] ?? result.action;
   const icon = result.success ? "✅" : "❌";
+  const isFolder = result.action === "create_folder" || result.mimeType?.includes("folder");
 
   return (
-    <div
-      className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium ${
-        result.success
-          ? "border-green-200 bg-green-50 text-green-800"
-          : "border-red-200 bg-red-50 text-red-800"
-      }`}
-    >
-      <span>{icon}</span>
-      <span>
-        {label} <strong>{result.fileName}</strong>
-      </span>
-      {result.success && result.googleDriveLink && (
-        <a
-          href={result.googleDriveLink}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="ml-1 underline hover:no-underline"
-        >
-          Open
-        </a>
-      )}
-      {!result.success && result.error && (
-        <span className="text-red-600">— {result.error}</span>
+    <div className="flex flex-col gap-2">
+      <div
+        className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium ${
+          result.success
+            ? "border-green-200 bg-green-50 text-green-800"
+            : "border-red-200 bg-red-50 text-red-800"
+        }`}
+      >
+        <span>{icon}</span>
+        <span>
+          {label} <strong>{result.fileName}</strong>
+        </span>
+        {result.success && result.googleDriveLink && (
+          <a
+            href={result.googleDriveLink}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="ml-1 underline hover:no-underline"
+          >
+            Open
+          </a>
+        )}
+        {!result.success && result.error && (
+          <span className="text-red-600">— {result.error}</span>
+        )}
+      </div>
+      {result.success && result.fileId && !isFolder && (
+        <iframe
+          src={getEmbedUrl(result.fileId, result.mimeType)}
+          width="100%"
+          height="400"
+          allow="autoplay"
+          className="rounded-lg border border-gray-200"
+          title={`Preview of ${result.fileName}`}
+        />
       )}
     </div>
   );
@@ -537,7 +566,7 @@ function CitationPill({ citation }: { citation: Citation }) {
       className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
     >
       <svg
-        className="h-3 w-3"
+        className="h-3 w-3 shrink-0"
         fill="none"
         viewBox="0 0 24 24"
         strokeWidth={2}
@@ -546,7 +575,7 @@ function CitationPill({ citation }: { citation: Citation }) {
         <path
           strokeLinecap="round"
           strokeLinejoin="round"
-          d="M13.19 8.688a4.5 4.5 0 0 1 1.242 7.244l-4.5 4.5a4.5 4.5 0 0 1-6.364-6.364l1.757-1.757m9.86-2.06a4.5 4.5 0 0 0-1.242-7.244l-4.5-4.5a4.5 4.5 0 0 0-6.364 6.364L4.757 8.25"
+          d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"
         />
       </svg>
       {citation.fileName}

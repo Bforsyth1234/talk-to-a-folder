@@ -9,6 +9,7 @@ import { FoldersModule } from "../folders/folders.module";
   imports: [IngestModule, AuthModule, FoldersModule],
   controllers: [ChatController],
   providers: [ChatService],
+  exports: [ChatService],
 })
 export class ChatModule {}
 

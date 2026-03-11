@@ -359,6 +359,7 @@ Respond with ONLY valid JSON, nothing else.`,
             success: true,
             fileId: result.id,
             googleDriveLink: `https://drive.google.com/file/d/${result.id}/view`,
+            mimeType,
           };
         }
 
@@ -373,6 +374,7 @@ Respond with ONLY valid JSON, nothing else.`,
             success: true,
             fileId: result.id,
             googleDriveLink: `https://drive.google.com/drive/folders/${result.id}`,
+            mimeType: "application/vnd.google-apps.folder",
           };
         }
 
@@ -412,6 +414,7 @@ Respond with ONLY valid JSON, nothing else.`,
             success: true,
             fileId: result.id,
             googleDriveLink: `https://drive.google.com/file/d/${result.id}/view`,
+            mimeType: sourceFile.mimeType,
           };
         }
 
@@ -439,6 +442,7 @@ Respond with ONLY valid JSON, nothing else.`,
             success: true,
             fileId: result.id,
             googleDriveLink: `https://drive.google.com/file/d/${result.id}/view`,
+            mimeType: sourceFile.mimeType,
           };
         }
 
@@ -477,6 +481,7 @@ Respond with ONLY valid JSON, nothing else.`,
             success: true,
             fileId: result.id,
             googleDriveLink: `https://drive.google.com/file/d/${result.id}/view`,
+            mimeType: sourceFile.mimeType,
           };
         }
 
@@ -504,6 +509,7 @@ Respond with ONLY valid JSON, nothing else.`,
             success: true,
             fileId: result.id,
             googleDriveLink: `https://drive.google.com/file/d/${result.id}/view`,
+            mimeType: sourceFile.mimeType,
           };
         }
 

@@ -192,6 +192,66 @@ export async function moveFile(
 }
 
 // ---------------------------------------------------------------------------
+// Eval
+// ---------------------------------------------------------------------------
+
+export async function getEvalTests(
+  accessToken: string,
+): Promise<import("@talk-to-a-folder/shared").EvalTestCase[]> {
+  const res = await fetch(`${API_BASE}/eval/tests`, {
+    headers: authHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to get eval tests (${res.status}): ${text}`);
+  }
+  return res.json();
+}
+
+export async function runEvalStream(
+  folderId: string,
+  accessToken: string,
+  testIds: string[] | undefined,
+  onResult: (result: import("@talk-to-a-folder/shared").EvalTestResult) => void,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/eval/run`, {
+    method: "POST",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify({ folderId, testIds }),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Eval run failed (${res.status}): ${text}`);
+  }
+
+  const reader = res.body?.getReader();
+  if (!reader) throw new Error("No response body");
+
+  const decoder = new TextDecoder();
+  let buffer = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) continue;
+      onResult(JSON.parse(trimmed));
+    }
+  }
+
+  // Process any remaining buffer
+  if (buffer.trim()) {
+    onResult(JSON.parse(buffer.trim()));
+  }
+}
+
+// ---------------------------------------------------------------------------
 // Chat – NDJSON streaming
 // ---------------------------------------------------------------------------
 
