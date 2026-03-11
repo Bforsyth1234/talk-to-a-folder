@@ -12,6 +12,9 @@ export interface DriveFile {
 const SUPPORTED_MIME_TYPES = new Set([
   "application/pdf",
   "application/vnd.google-apps.document", // Google Docs → export as text
+  "application/vnd.google-apps.spreadsheet", // Google Sheets → export as CSV
+  "application/vnd.google-apps.presentation", // Google Slides → export as text
+  "application/vnd.google-apps.form", // Google Forms → export as text
   "text/plain",
   "text/markdown",
   "text/csv",
@@ -20,6 +23,10 @@ const SUPPORTED_MIME_TYPES = new Set([
 
 /** Google Docs export MIME for plain-text extraction. */
 const GOOGLE_DOC_EXPORT_MIME = "text/plain";
+/** Google Sheets export MIME for CSV extraction. */
+const GOOGLE_SHEET_EXPORT_MIME = "text/csv";
+/** Google Slides export MIME for plain-text extraction. */
+const GOOGLE_SLIDES_EXPORT_MIME = "text/plain";
 
 @Injectable()
 export class DriveService {
@@ -81,6 +88,25 @@ export class DriveService {
     if (file.mimeType === "application/vnd.google-apps.document") {
       const res = await drive.files.export(
         { fileId: file.id, mimeType: GOOGLE_DOC_EXPORT_MIME },
+        { responseType: "text" },
+      );
+      return String(res.data);
+    }
+
+    if (file.mimeType === "application/vnd.google-apps.spreadsheet") {
+      const res = await drive.files.export(
+        { fileId: file.id, mimeType: GOOGLE_SHEET_EXPORT_MIME },
+        { responseType: "text" },
+      );
+      return String(res.data);
+    }
+
+    if (
+      file.mimeType === "application/vnd.google-apps.presentation" ||
+      file.mimeType === "application/vnd.google-apps.form"
+    ) {
+      const res = await drive.files.export(
+        { fileId: file.id, mimeType: GOOGLE_SLIDES_EXPORT_MIME },
         { responseType: "text" },
       );
       return String(res.data);
