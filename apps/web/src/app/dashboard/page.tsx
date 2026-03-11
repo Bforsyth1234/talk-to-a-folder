@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { ingestFolder, streamChat } from "@/lib/api-client";
-import type { IngestResponse, ChatMessage, Citation } from "@talk-to-a-folder/shared";
+import { ingestFolder, streamChat, getSavedFolders, deleteSavedFolder } from "@/lib/api-client";
+import type { IngestResponse, ChatMessage, Citation, SavedFolder } from "@talk-to-a-folder/shared";
 
 type SyncState =
   | { status: "idle" }
@@ -17,12 +17,28 @@ export default function DashboardPage() {
   const router = useRouter();
   const [folderInput, setFolderInput] = useState("");
   const [syncState, setSyncState] = useState<SyncState>({ status: "idle" });
+  const [savedFolders, setSavedFolders] = useState<SavedFolder[]>([]);
+  const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+
+  const loadFolders = useCallback(async () => {
+    if (!accessToken) return;
+    try {
+      const folders = await getSavedFolders(accessToken);
+      setSavedFolders(folders);
+    } catch {
+      // silently fail – folders list is non-critical
+    }
+  }, [accessToken]);
 
   useEffect(() => {
     if (!session) {
       router.replace("/");
     }
   }, [session, router]);
+
+  useEffect(() => {
+    void loadFolders();
+  }, [loadFolders]);
 
   if (!session || !accessToken) return null;
 
@@ -34,6 +50,9 @@ export default function DashboardPage() {
     try {
       const result = await ingestFolder({ folderId: trimmed }, accessToken);
       setSyncState({ status: "success", result });
+      setActiveFolderId(result.folderId);
+      // Refresh saved folders list (the backend auto-saves on ingest)
+      void loadFolders();
     } catch (err) {
       setSyncState({
         status: "error",
@@ -42,8 +61,24 @@ export default function DashboardPage() {
     }
   };
 
-  const folderId =
-    syncState.status === "success" ? syncState.result.folderId : null;
+  const handleSelectFolder = (folder: SavedFolder) => {
+    setActiveFolderId(folder.folderId);
+    setSyncState({ status: "idle" });
+  };
+
+  const handleDeleteFolder = async (folder: SavedFolder) => {
+    try {
+      await deleteSavedFolder(folder.id, accessToken);
+      setSavedFolders((prev) => prev.filter((f) => f.id !== folder.id));
+      if (activeFolderId === folder.folderId) {
+        setActiveFolderId(null);
+      }
+    } catch {
+      // silently fail
+    }
+  };
+
+  const folderId = activeFolderId;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -146,7 +181,52 @@ export default function DashboardPage() {
           )}
         </section>
 
-        {/* Chat section – only visible after successful sync */}
+        {/* Saved folders */}
+        {savedFolders.length > 0 && (
+          <section className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+            <h2 className="mb-3 text-base font-semibold text-gray-900">
+              📂 Your Folders
+            </h2>
+            <div className="space-y-2">
+              {savedFolders.map((folder) => (
+                <div
+                  key={folder.id}
+                  className={`flex items-center justify-between rounded-lg border px-4 py-3 transition-colors ${
+                    activeFolderId === folder.folderId
+                      ? "border-blue-300 bg-blue-50"
+                      : "border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  <button
+                    type="button"
+                    onClick={() => handleSelectFolder(folder)}
+                    className="flex flex-1 flex-col items-start text-left"
+                  >
+                    <span className="text-sm font-medium text-gray-900 truncate max-w-md">
+                      {folder.name}
+                    </span>
+                    <span className="text-xs text-gray-500">
+                      {folder.fileCount} files · synced{" "}
+                      {new Date(folder.savedAt).toLocaleDateString()}
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void handleDeleteFolder(folder)}
+                    className="ml-3 rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
+                    title="Remove folder"
+                  >
+                    <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
+                    </svg>
+                  </button>
+                </div>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Chat section – only visible when a folder is selected */}
         {folderId && (
           <section className="mt-6">
             <ChatSection folderId={folderId} accessToken={accessToken} />

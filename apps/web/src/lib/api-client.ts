@@ -3,6 +3,7 @@ import type {
   IngestResponse,
   ChatRequest,
   ChatStreamEvent,
+  SavedFolder,
 } from "@talk-to-a-folder/shared";
 
 const API_BASE = process.env["NEXT_PUBLIC_API_URL"] ?? "http://localhost:3001";
@@ -32,6 +33,37 @@ export async function ingestFolder(
     throw new Error(`Ingest failed (${res.status}): ${text}`);
   }
   return res.json() as Promise<IngestResponse>;
+}
+
+// ---------------------------------------------------------------------------
+// Saved Folders
+// ---------------------------------------------------------------------------
+
+export async function getSavedFolders(
+  accessToken: string,
+): Promise<SavedFolder[]> {
+  const res = await fetch(`${API_BASE}/folders`, {
+    headers: authHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to load folders (${res.status}): ${text}`);
+  }
+  return res.json() as Promise<SavedFolder[]>;
+}
+
+export async function deleteSavedFolder(
+  id: string,
+  accessToken: string,
+): Promise<void> {
+  const res = await fetch(`${API_BASE}/folders/${id}`, {
+    method: "DELETE",
+    headers: authHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to delete folder (${res.status}): ${text}`);
+  }
 }
 
 // ---------------------------------------------------------------------------

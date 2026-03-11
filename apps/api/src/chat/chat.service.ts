@@ -5,7 +5,7 @@ import OpenAI from "openai";
 import Groq from "groq-sdk";
 
 const EMBEDDING_MODEL = "text-embedding-3-small";
-const GROQ_MODEL = "llama-3.3-70b-versatile";
+const GROQ_MODEL = "groq/compound";
 const TOP_K = 8;
 
 interface RetrievedChunk {
@@ -48,9 +48,63 @@ export class ChatService {
   }
 
   /**
-   * Retrieve relevant chunks from ChromaDB, filtered by folderId.
+   * Detect file names referenced in the user query by matching against known file names.
+   * Handles partial matches, ordinal references ("first file", "1st file", "file 3"), etc.
    */
-  async retrieve(query: string, folderId: string): Promise<RetrievedChunk[]> {
+  private findReferencedFiles(query: string, sortedFileNames: string[]): string[] {
+    const q = query.toLowerCase();
+    const matched: string[] = [];
+
+    // Ordinal word map
+    const ordinals: Record<string, number> = {
+      first: 1, second: 2, third: 3, fourth: 4, fifth: 5,
+      sixth: 6, seventh: 7, eighth: 8, ninth: 9, tenth: 10,
+    };
+
+    // Check ordinal words: "first file", "second file", etc.
+    for (const [word, idx] of Object.entries(ordinals)) {
+      if (q.includes(word) && (q.includes("file") || q.includes("document"))) {
+        if (idx <= sortedFileNames.length) {
+          matched.push(sortedFileNames[idx - 1]!);
+        }
+      }
+    }
+
+    // Check numeric ordinals: "1st", "2nd", "3rd", "4th", "file 1", "file #2", etc.
+    const numericPatterns = [
+      /(\d+)(?:st|nd|rd|th)\s*(?:file|document)/gi,
+      /(?:file|document)\s*#?\s*(\d+)/gi,
+    ];
+    for (const pattern of numericPatterns) {
+      let m;
+      while ((m = pattern.exec(q)) !== null) {
+        const idx = parseInt(m[1]!, 10);
+        if (idx >= 1 && idx <= sortedFileNames.length) {
+          matched.push(sortedFileNames[idx - 1]!);
+        }
+      }
+    }
+
+    // Check direct file name matches (partial, case-insensitive)
+    for (const name of sortedFileNames) {
+      const nameLower = name.toLowerCase();
+      // Strip extension for matching
+      const nameNoExt = nameLower.replace(/\.[^.]+$/, "");
+      // Match if the query contains the file name or a significant portion of it
+      if (q.includes(nameLower) || q.includes(nameNoExt)) {
+        matched.push(name);
+      }
+    }
+
+    return [...new Set(matched)];
+  }
+
+  /**
+   * Retrieve relevant chunks from ChromaDB, filtered by folderId.
+   * Supplements similarity results with file-targeted chunks when the query
+   * references specific files.
+   */
+  async retrieve(query: string, folderId: string, allFileNames?: string[]): Promise<RetrievedChunk[]> {
     const queryEmbedding = await this.embedQuery(query);
     const collection = this.chromaDbService.getCollection();
 
@@ -88,6 +142,43 @@ export class ChatService {
       });
     }
 
+    // Supplement with file-targeted retrieval when the query references specific files
+    if (allFileNames && allFileNames.length > 0) {
+      const referencedFiles = this.findReferencedFiles(query, allFileNames);
+      if (referencedFiles.length > 0) {
+        this.logger.log(`Detected file references: ${referencedFiles.join(", ")}`);
+        const existingChunkIds = new Set(
+          chunks.map((c) => `${c.metadata.fileId}_${c.metadata.chunkIndex}`),
+        );
+
+        for (const fileName of referencedFiles) {
+          const fileChunks = await this.chromaDbService.getChunksByFileName(folderId, fileName);
+          for (let i = 0; i < fileChunks.documents.length; i++) {
+            const doc = fileChunks.documents[i];
+            const meta = fileChunks.metadatas[i];
+            if (!doc || !meta) continue;
+
+            const chunkKey = `${meta["fileId"]}_${meta["chunkIndex"]}`;
+            if (existingChunkIds.has(chunkKey)) continue;
+            existingChunkIds.add(chunkKey);
+
+            chunks.push({
+              text: doc,
+              metadata: {
+                fileName: String(meta["fileName"] ?? ""),
+                fileId: String(meta["fileId"] ?? ""),
+                googleDriveLink: String(meta["googleDriveLink"] ?? ""),
+                folderId: String(meta["folderId"] ?? ""),
+                mimeType: String(meta["mimeType"] ?? ""),
+                chunkIndex: Number(meta["chunkIndex"] ?? 0),
+              },
+              score: 0.9, // High score since explicitly requested
+            });
+          }
+        }
+      }
+    }
+
     this.logger.log(
       `Retrieved ${chunks.length} chunks for folder ${folderId}`,
     );
@@ -116,7 +207,7 @@ export class ChatService {
   /**
    * Build the system prompt with retrieved context.
    */
-  private buildSystemPrompt(chunks: RetrievedChunk[]): string {
+  private buildSystemPrompt(chunks: RetrievedChunk[], allFileNames: string[]): string {
     const contextBlock = chunks
       .map(
         (c, i) =>
@@ -124,14 +215,22 @@ export class ChatService {
       )
       .join("\n\n---\n\n");
 
+    const fileListBlock = allFileNames
+      .map((name, i) => `${i + 1}. ${name}`)
+      .join("\n");
+
     return `You are a helpful assistant that answers questions based ONLY on the provided context documents. If the answer cannot be found in the context, say so clearly. Do not make up information.
 
-CONTEXT:
+FOLDER CONTENTS (${allFileNames.length} files total):
+${fileListBlock}
+
+CONTEXT (most relevant excerpts):
 ${contextBlock}
 
 INSTRUCTIONS:
 - Answer the user's question using ONLY the context above.
 - Reference source file names when relevant.
+- When asked about the number of files or which files exist, use the FOLDER CONTENTS list above.
 - If the context does not contain enough information, state that clearly.`;
   }
 
@@ -143,7 +242,8 @@ INSTRUCTIONS:
     folderId: string,
     history?: { role: "user" | "assistant"; content: string }[],
   ): AsyncGenerator<ChatStreamEvent> {
-    const chunks = await this.retrieve(message, folderId);
+    const allFileNames = await this.chromaDbService.getAllFileNames(folderId);
+    const chunks = await this.retrieve(message, folderId, allFileNames);
     const citations = this.buildCitations(chunks);
 
     if (chunks.length === 0) {
@@ -158,7 +258,7 @@ INSTRUCTIONS:
     // Emit citations early so the frontend can render them while streaming
     yield { type: "citations", citations };
 
-    const systemPrompt = this.buildSystemPrompt(chunks);
+    const systemPrompt = this.buildSystemPrompt(chunks, allFileNames);
     const messages: { role: "system" | "user" | "assistant"; content: string }[] = [
       { role: "system", content: systemPrompt },
     ];

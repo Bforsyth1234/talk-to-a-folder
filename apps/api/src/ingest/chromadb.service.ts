@@ -59,5 +59,43 @@ export class ChromaDbService implements OnModuleInit {
   getCollection(): Collection {
     return this.collection;
   }
+
+  /**
+   * Return all unique file names stored for a given folderId.
+   */
+  async getAllFileNames(folderId: string): Promise<string[]> {
+    const result = await this.collection.get({
+      where: { folderId },
+      include: ["metadatas"],
+    });
+
+    const names = new Set<string>();
+    for (const meta of result.metadatas ?? []) {
+      if (meta && typeof meta["fileName"] === "string") {
+        names.add(meta["fileName"]);
+      }
+    }
+    return Array.from(names).sort();
+  }
+
+  /**
+   * Return all chunks for a specific file within a folder, identified by fileName.
+   */
+  async getChunksByFileName(
+    folderId: string,
+    fileName: string,
+  ): Promise<{ documents: string[]; metadatas: Record<string, string | number | boolean>[] }> {
+    const result = await this.collection.get({
+      where: { $and: [{ folderId }, { fileName }] },
+      include: ["documents", "metadatas"],
+    });
+
+    return {
+      documents: (result.documents ?? []).filter((d): d is string => d !== null),
+      metadatas: (result.metadatas ?? []).filter(
+        (m): m is Record<string, string | number | boolean> => m !== null,
+      ),
+    };
+  }
 }
 

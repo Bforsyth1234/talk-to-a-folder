@@ -45,3 +45,8 @@ export {
   type ChatStreamEvent,
 } from "./chat.js";
 
+export {
+  SavedFolderSchema,
+  type SavedFolder,
+} from "./folder.js";
+

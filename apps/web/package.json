@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "prebuild": "pnpm --filter @talk-to-a-folder/shared build",
     "build": "next build",
     "dev": "next dev --port 3000",
     "start": "next start",

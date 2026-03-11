@@ -1,5 +1,6 @@
 import { Body, Controller, Post, Req, UseGuards } from "@nestjs/common";
 import { IngestService } from "./ingest.service";
+import { FoldersService } from "../folders/folders.service";
 import { AuthGuard, type AuthenticatedRequest } from "../auth/auth.guard";
 import {
   IngestRequestSchema,
@@ -9,7 +10,10 @@ import { BadRequestException } from "@nestjs/common";
 
 @Controller("ingest")
 export class IngestController {
-  constructor(private readonly ingestService: IngestService) {}
+  constructor(
+    private readonly ingestService: IngestService,
+    private readonly foldersService: FoldersService,
+  ) {}
 
   /**
    * POST /ingest
@@ -30,7 +34,17 @@ export class IngestController {
     }
 
     const accessToken = req.session.googleToken.accessToken;
-    return this.ingestService.ingestFolder(parsed.data.folderId, accessToken);
+    const result = await this.ingestService.ingestFolder(parsed.data.folderId, accessToken);
+
+    // Auto-save the folder for the user
+    this.foldersService.save(
+      req.session.email,
+      result.folderId,
+      parsed.data.folderId, // preserve original input (URL or ID) as name
+      result.processedFiles,
+    );
+
+    return result;
   }
 }
 

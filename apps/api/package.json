@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "private": true,
   "scripts": {
+    "prebuild": "pnpm --filter @talk-to-a-folder/shared build",
     "build": "nest build",
     "dev": "node --env-file-if-exists=.env ../../node_modules/@nestjs/cli/bin/nest.js start --watch",
     "start": "node --env-file-if-exists=.env dist/main",
