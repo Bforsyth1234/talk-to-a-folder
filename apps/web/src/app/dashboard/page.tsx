@@ -160,7 +160,7 @@ export default function DashboardPage() {
                 ✅ Folder synced successfully
               </p>
               <p className="mt-1 text-xs text-green-700">
-                {syncState.result.processedFiles} files processed
+                {syncState.result.processedFiles} of {syncState.result.totalFiles} files processed
                 {syncState.result.skippedFiles > 0 &&
                   `, ${syncState.result.skippedFiles} skipped`}
                 {syncState.result.errorFiles > 0 &&

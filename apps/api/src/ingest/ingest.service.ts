@@ -43,10 +43,10 @@ export class IngestService {
     const folderId = this.normaliseFolderId(rawFolderId);
     this.logger.log(`Starting ingestion for folder ${folderId}`);
 
-    const driveFiles = await this.driveService.listFiles(folderId, accessToken);
+    const listing = await this.driveService.listFiles(folderId, accessToken);
     const fileResults: IngestedFile[] = [];
 
-    for (const file of driveFiles) {
+    for (const file of listing.supported) {
       try {
         const result = await this.processFile(file, folderId, accessToken);
         fileResults.push(result);
@@ -66,7 +66,7 @@ export class IngestService {
 
     const response: IngestResponse = {
       folderId,
-      totalFiles: driveFiles.length,
+      totalFiles: listing.totalCount,
       processedFiles: fileResults.filter((f) => f.status === "success").length,
       skippedFiles: fileResults.filter((f) => f.status === "skipped").length,
       errorFiles: fileResults.filter((f) => f.status === "error").length,

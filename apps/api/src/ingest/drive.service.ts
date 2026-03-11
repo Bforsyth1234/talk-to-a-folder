@@ -8,13 +8,18 @@ export interface DriveFile {
   mimeType: string;
 }
 
+export interface ListFilesResult {
+  supported: DriveFile[];
+  allFileNames: string[];
+  totalCount: number;
+}
+
 /** MIME types we can ingest in this prototype. */
 const SUPPORTED_MIME_TYPES = new Set([
   "application/pdf",
   "application/vnd.google-apps.document", // Google Docs → export as text
   "application/vnd.google-apps.spreadsheet", // Google Sheets → export as CSV
   "application/vnd.google-apps.presentation", // Google Slides → export as text
-  "application/vnd.google-apps.form", // Google Forms → export as text
   "text/plain",
   "text/markdown",
   "text/csv",
@@ -47,9 +52,10 @@ export class DriveService {
   async listFiles(
     folderId: string,
     accessToken: string,
-  ): Promise<DriveFile[]> {
+  ): Promise<ListFilesResult> {
     const drive = this.buildDriveClient(accessToken);
-    const files: DriveFile[] = [];
+    const supported: DriveFile[] = [];
+    const allFileNames: string[] = [];
     let pageToken: string | undefined;
 
     do {
@@ -61,17 +67,24 @@ export class DriveService {
       });
 
       for (const f of res.data.files ?? []) {
-        if (f.id && f.name && f.mimeType && SUPPORTED_MIME_TYPES.has(f.mimeType)) {
-          files.push({ id: f.id, name: f.name, mimeType: f.mimeType });
+        if (f.id && f.name && f.mimeType) {
+          allFileNames.push(f.name);
+          if (SUPPORTED_MIME_TYPES.has(f.mimeType)) {
+            supported.push({ id: f.id, name: f.name, mimeType: f.mimeType });
+          } else {
+            this.logger.warn(
+              `Skipping unsupported file "${f.name}" (mimeType: ${f.mimeType})`,
+            );
+          }
         }
       }
       pageToken = res.data.nextPageToken ?? undefined;
     } while (pageToken);
 
     this.logger.log(
-      `Found ${files.length} supported file(s) in folder ${folderId}`,
+      `Found ${supported.length} supported file(s) out of ${allFileNames.length} total in folder ${folderId}`,
     );
-    return files;
+    return { supported, allFileNames, totalCount: allFileNames.length };
   }
 
   /**
@@ -101,10 +114,7 @@ export class DriveService {
       return String(res.data);
     }
 
-    if (
-      file.mimeType === "application/vnd.google-apps.presentation" ||
-      file.mimeType === "application/vnd.google-apps.form"
-    ) {
+    if (file.mimeType === "application/vnd.google-apps.presentation") {
       const res = await drive.files.export(
         { fileId: file.id, mimeType: GOOGLE_SLIDES_EXPORT_MIME },
         { responseType: "text" },
