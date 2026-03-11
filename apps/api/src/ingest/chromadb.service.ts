@@ -118,6 +118,22 @@ export class ChromaDbService implements OnModuleInit {
   }
 
   /**
+   * Delete all chunks for a specific file by fileId.
+   * Used when a file is updated/moved so it can be re-ingested.
+   */
+  async deleteByFileId(fileId: string): Promise<void> {
+    const result = await this.collection.get({
+      where: { fileId },
+      include: [],
+    });
+
+    if (result.ids.length > 0) {
+      await this.collection.delete({ ids: result.ids });
+      this.logger.log(`Deleted ${result.ids.length} chunk(s) for fileId ${fileId}`);
+    }
+  }
+
+  /**
    * Return all chunks for a specific file within a folder, identified by fileName.
    */
   async getChunksByFileName(

@@ -4,7 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { ingestFolder, streamChat, getSavedFolders, deleteSavedFolder } from "@/lib/api-client";
-import type { IngestResponse, ChatMessage, Citation, SavedFolder } from "@talk-to-a-folder/shared";
+import type { IngestResponse, ChatMessage, Citation, SavedFolder, FileActionResult } from "@talk-to-a-folder/shared";
 
 type SyncState =
   | { status: "idle" }
@@ -268,6 +268,7 @@ function ChatSection({
 
     let assistantText = "";
     let citations: Citation[] = [];
+    let fileActions: FileActionResult[] = [];
 
     // Add placeholder assistant message
     setMessages((prev) => [
@@ -312,6 +313,20 @@ function ChatSection({
               return updated;
             });
             break;
+          case "file_action":
+            fileActions = [...fileActions, event.fileAction];
+            setMessages((prev) => {
+              const updated = [...prev];
+              const last = updated[updated.length - 1];
+              if (last?.role === "assistant") {
+                updated[updated.length - 1] = {
+                  ...last,
+                  fileActions: [...fileActions],
+                };
+              }
+              return updated;
+            });
+            break;
           case "done":
             setMessages((prev) => {
               const updated = [...prev];
@@ -321,6 +336,7 @@ function ChatSection({
                   ...last,
                   content: event.answer,
                   citations: event.citations,
+                  fileActions: event.fileActions ?? fileActions,
                 };
               }
               return updated;
@@ -399,6 +415,15 @@ function ChatSection({
             >
               <p className="whitespace-pre-wrap text-sm">{msg.content}</p>
               {msg.role === "assistant" &&
+                msg.fileActions &&
+                msg.fileActions.length > 0 && (
+                  <div className="mt-3 space-y-2">
+                    {msg.fileActions.map((fa, fi) => (
+                      <FileActionPill key={fi} result={fa} />
+                    ))}
+                  </div>
+                )}
+              {msg.role === "assistant" &&
                 msg.citations &&
                 msg.citations.length > 0 && (
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -409,6 +434,7 @@ function ChatSection({
                 )}
               {msg.role === "assistant" &&
                 !msg.content &&
+                !msg.fileActions?.length &&
                 isStreaming && (
                   <span className="inline-block h-4 w-1 animate-pulse bg-gray-400" />
                 )}
@@ -448,6 +474,51 @@ function ChatSection({
           </button>
         </form>
       </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// File Action Pill
+// ---------------------------------------------------------------------------
+
+function FileActionPill({ result }: { result: FileActionResult }) {
+  const actionLabels: Record<string, string> = {
+    create_file: "Created",
+    create_folder: "Created folder",
+    edit_file: "Updated",
+    copy_file: "Copied",
+    move_file: "Moved",
+    rename_file: "Renamed",
+  };
+  const label = actionLabels[result.action] ?? result.action;
+  const icon = result.success ? "✅" : "❌";
+
+  return (
+    <div
+      className={`inline-flex items-center gap-2 rounded-lg border px-3 py-1.5 text-xs font-medium ${
+        result.success
+          ? "border-green-200 bg-green-50 text-green-800"
+          : "border-red-200 bg-red-50 text-red-800"
+      }`}
+    >
+      <span>{icon}</span>
+      <span>
+        {label} <strong>{result.fileName}</strong>
+      </span>
+      {result.success && result.googleDriveLink && (
+        <a
+          href={result.googleDriveLink}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="ml-1 underline hover:no-underline"
+        >
+          Open
+        </a>
+      )}
+      {!result.success && result.error && (
+        <span className="text-red-600">— {result.error}</span>
+      )}
     </div>
   );
 }

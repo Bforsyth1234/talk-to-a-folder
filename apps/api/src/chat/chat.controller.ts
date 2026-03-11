@@ -58,12 +58,16 @@ export class ChatController {
     res.setHeader("Connection", "keep-alive");
     res.setHeader("X-Content-Type-Options", "nosniff");
 
+    const accessToken = req.session.googleToken.accessToken;
+
     try {
       for await (const event of this.chatService.streamChat(
         message,
         folderId,
+        accessToken,
         history,
         allFileNames,
+        req.session.email,
       )) {
         res.write(JSON.stringify(event) + "\n");
       }

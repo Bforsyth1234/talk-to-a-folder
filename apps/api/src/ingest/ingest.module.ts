@@ -10,7 +10,7 @@ import { FoldersModule } from "../folders/folders.module";
   imports: [AuthModule, FoldersModule],
   controllers: [IngestController],
   providers: [IngestService, DriveService, ChromaDbService],
-  exports: [ChromaDbService],
+  exports: [ChromaDbService, DriveService, IngestService],
 })
 export class IngestModule {}
 

@@ -10,7 +10,7 @@ const SCOPES = [
   "openid",
   "email",
   "profile",
-  "https://www.googleapis.com/auth/drive.readonly",
+  "https://www.googleapis.com/auth/drive",
 ].join(" ");
 
 function ConfiguredSignInButton() {

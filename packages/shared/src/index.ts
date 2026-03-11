@@ -35,6 +35,10 @@ export {
 export {
   MessageRoleSchema,
   type MessageRole,
+  FileActionSchema,
+  type FileAction,
+  FileActionResultSchema,
+  type FileActionResult,
   ChatMessageSchema,
   type ChatMessage,
   ChatRequestSchema,
@@ -49,4 +53,23 @@ export {
   SavedFolderSchema,
   type SavedFolder,
 } from "./folder.js";
+
+export {
+  DriveFileInfoSchema,
+  type DriveFileInfo,
+  CreateFileRequestSchema,
+  type CreateFileRequest,
+  CreateFolderRequestSchema,
+  type CreateFolderRequest,
+  UpdateFileRequestSchema,
+  type UpdateFileRequest,
+  CopyFileRequestSchema,
+  type CopyFileRequest,
+  MoveFileRequestSchema,
+  type MoveFileRequest,
+  ListFolderContentsResponseSchema,
+  type ListFolderContentsResponse,
+  FileContentResponseSchema,
+  type FileContentResponse,
+} from "./file-operations.js";
 

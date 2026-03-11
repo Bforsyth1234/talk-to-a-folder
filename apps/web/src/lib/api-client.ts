@@ -4,6 +4,14 @@ import type {
   ChatRequest,
   ChatStreamEvent,
   SavedFolder,
+  DriveFileInfo,
+  CreateFileRequest,
+  CreateFolderRequest,
+  UpdateFileRequest,
+  CopyFileRequest,
+  MoveFileRequest,
+  ListFolderContentsResponse,
+  FileContentResponse,
 } from "@talk-to-a-folder/shared";
 
 const API_BASE = process.env["NEXT_PUBLIC_API_URL"] ?? "http://localhost:3001";
@@ -64,6 +72,123 @@ export async function deleteSavedFolder(
     const text = await res.text().catch(() => "");
     throw new Error(`Failed to delete folder (${res.status}): ${text}`);
   }
+}
+
+// ---------------------------------------------------------------------------
+// File Operations
+// ---------------------------------------------------------------------------
+
+export async function listFolderFiles(
+  folderId: string,
+  accessToken: string,
+): Promise<ListFolderContentsResponse> {
+  const res = await fetch(`${API_BASE}/files?folderId=${encodeURIComponent(folderId)}`, {
+    headers: authHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to list files (${res.status}): ${text}`);
+  }
+  return res.json() as Promise<ListFolderContentsResponse>;
+}
+
+export async function getFileContent(
+  fileId: string,
+  accessToken: string,
+): Promise<FileContentResponse> {
+  const res = await fetch(`${API_BASE}/files/${fileId}/content`, {
+    headers: authHeaders(accessToken),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to get file content (${res.status}): ${text}`);
+  }
+  return res.json() as Promise<FileContentResponse>;
+}
+
+export async function createFile(
+  req: CreateFileRequest,
+  accessToken: string,
+): Promise<DriveFileInfo> {
+  const res = await fetch(`${API_BASE}/files`, {
+    method: "POST",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to create file (${res.status}): ${text}`);
+  }
+  return res.json() as Promise<DriveFileInfo>;
+}
+
+export async function createFolder(
+  req: CreateFolderRequest,
+  accessToken: string,
+): Promise<DriveFileInfo> {
+  const res = await fetch(`${API_BASE}/files/folder`, {
+    method: "POST",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to create folder (${res.status}): ${text}`);
+  }
+  return res.json() as Promise<DriveFileInfo>;
+}
+
+export async function updateFile(
+  fileId: string,
+  req: UpdateFileRequest,
+  accessToken: string,
+  folderId?: string,
+): Promise<DriveFileInfo> {
+  const params = folderId ? `?folderId=${encodeURIComponent(folderId)}` : "";
+  const res = await fetch(`${API_BASE}/files/${fileId}${params}`, {
+    method: "PATCH",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to update file (${res.status}): ${text}`);
+  }
+  return res.json() as Promise<DriveFileInfo>;
+}
+
+export async function copyFile(
+  fileId: string,
+  req: CopyFileRequest,
+  accessToken: string,
+): Promise<DriveFileInfo> {
+  const res = await fetch(`${API_BASE}/files/${fileId}/copy`, {
+    method: "POST",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to copy file (${res.status}): ${text}`);
+  }
+  return res.json() as Promise<DriveFileInfo>;
+}
+
+export async function moveFile(
+  fileId: string,
+  req: MoveFileRequest,
+  accessToken: string,
+): Promise<DriveFileInfo> {
+  const res = await fetch(`${API_BASE}/files/${fileId}/move`, {
+    method: "POST",
+    headers: authHeaders(accessToken),
+    body: JSON.stringify(req),
+  });
+  if (!res.ok) {
+    const text = await res.text().catch(() => "");
+    throw new Error(`Failed to move file (${res.status}): ${text}`);
+  }
+  return res.json() as Promise<DriveFileInfo>;
 }
 
 // ---------------------------------------------------------------------------
