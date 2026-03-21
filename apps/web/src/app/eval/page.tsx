@@ -78,12 +78,12 @@ export default function EvalPage() {
       <header className="border-b border-gray-200 bg-white px-6 py-3">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-lg font-semibold text-gray-900">🧪 Eval Dashboard</h1>
-            <a href="/dashboard" className="text-sm text-blue-600 hover:underline">← Back to app</a>
+            <h1 className="text-base font-semibold text-gray-900">🧪 Eval Dashboard</h1>
+            <a href="/dashboard" className="text-xs text-blue-600 hover:underline">← Back to app</a>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-sm text-gray-600">{session.name ?? session.email}</span>
-            <button onClick={signOut} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50">Sign out</button>
+            <span className="text-xs text-gray-600">{session.name ?? session.email}</span>
+            <button onClick={signOut} className="rounded-md border border-gray-300 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50">Sign out</button>
           </div>
         </div>
       </header>
@@ -93,16 +93,16 @@ export default function EvalPage() {
         <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="flex flex-wrap items-end gap-4">
             <div className="flex-1 min-w-[200px]">
-              <label className="mb-1 block text-sm font-medium text-gray-700">Folder</label>
+              <label className="mb-1 block text-xs font-medium text-gray-700">Folder</label>
               <select value={selectedFolder} onChange={(e) => setSelectedFolder(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm">
+                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-xs">
                 {folders.map((f) => (
                   <option key={f.folderId} value={f.folderId}>{f.name} ({f.fileCount} files)</option>
                 ))}
               </select>
             </div>
             <button onClick={handleRun} disabled={runState.status === "running" || !selectedFolder || selectedTests.size === 0}
-              className={`rounded-lg px-6 py-2 text-sm font-medium text-white transition-colors ${
+              className={`rounded-lg px-6 py-2 text-xs font-medium text-white transition-colors ${
                 runState.status === "running" ? "bg-amber-500 cursor-wait" :
                 !selectedFolder || selectedTests.size === 0 ? "bg-gray-400 cursor-not-allowed" :
                 "bg-blue-600 hover:bg-blue-700"
@@ -115,7 +115,7 @@ export default function EvalPage() {
         {/* Test selection */}
         <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-gray-900">Test Cases</h2>
+            <h2 className="text-sm font-semibold text-gray-900">Test Cases</h2>
             <button onClick={toggleAll} className="text-xs text-blue-600 hover:underline">
               {selectedTests.size === tests.length ? "Deselect all" : "Select all"}
             </button>
@@ -125,7 +125,7 @@ export default function EvalPage() {
               <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{cat.replace("_", " ")}</h3>
               <div className="space-y-1">
                 {tests.filter((t) => t.category === cat).map((t) => (
-                  <label key={t.id} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-sm hover:bg-gray-50 cursor-pointer">
+                  <label key={t.id} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs hover:bg-gray-50 cursor-pointer">
                     <input type="checkbox" checked={selectedTests.has(t.id)} onChange={() => toggleTest(t.id)} className="rounded" />
                     <span className="font-medium text-gray-800">{t.name}</span>
                     <span className="text-gray-400">— {t.description}</span>
@@ -138,7 +138,7 @@ export default function EvalPage() {
 
         {/* Results */}
         {runState.status === "error" && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-800">{runState.message}</div>
+          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-800">{runState.message}</div>
         )}
         {(runState.status === "running" || runState.status === "done") && (
           <EvalResults
@@ -189,11 +189,11 @@ function EvalResults({ results, totalExpected, isStreaming, expandedTest, setExp
       {/* Summary bar */}
       <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
         <div className="flex items-center gap-6">
-          <div className={`text-3xl font-bold ${pct === 100 ? "text-green-600" : pct >= 70 ? "text-amber-600" : "text-red-600"}`}>
+          <div className={`text-2xl font-bold ${pct === 100 ? "text-green-600" : pct >= 70 ? "text-amber-600" : "text-red-600"}`}>
             {isStreaming ? `${results.length}/${totalExpected}` : `${pct}%`}
           </div>
           <div className="flex-1">
-            <div className="mb-2 flex gap-4 text-sm">
+            <div className="mb-2 flex gap-4 text-xs">
               <span className="text-green-700">✅ {passedTests} passed</span>
               <span className="text-red-700">❌ {failedTests} failed</span>
               <span className="text-gray-500">{results.length}{isStreaming ? ` / ${totalExpected}` : ""} total</span>
@@ -237,7 +237,7 @@ function ResultCard({ result: r, expanded, onToggle }: {
   return (
     <div className={`rounded-xl border bg-white shadow-sm overflow-hidden ${r.passed ? "border-green-200" : "border-red-200"}`}>
       <button onClick={onToggle} className="flex w-full items-center gap-3 px-5 py-3 text-left hover:bg-gray-50">
-        <span className="text-lg">{r.passed ? "✅" : "❌"}</span>
+        <span className="text-base">{r.passed ? "✅" : "❌"}</span>
         <div className="flex-1">
           <span className="font-medium text-gray-900">{r.testName}</span>
           <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">{r.category}</span>
@@ -259,7 +259,7 @@ function ResultCard({ result: r, expanded, onToggle }: {
             <h4 className="mb-1 text-xs font-semibold uppercase text-gray-500">Assertions</h4>
             <div className="space-y-1">
               {r.assertions.map((a, i) => (
-                <div key={i} className={`flex items-start gap-2 rounded-lg px-3 py-1.5 text-sm ${a.passed ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+                <div key={i} className={`flex items-start gap-2 rounded-lg px-3 py-1.5 text-xs ${a.passed ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
                   <span>{a.passed ? "✓" : "✗"}</span>
                   <span className="font-mono text-xs">{a.name}</span>
                   <span className="text-gray-600">— {a.detail}</span>
@@ -305,7 +305,7 @@ function ResultCard({ result: r, expanded, onToggle }: {
               <h4 className="mb-1 text-xs font-semibold uppercase text-gray-500">File Actions</h4>
               <div className="space-y-1">
                 {r.fileActions.map((fa, i) => (
-                  <div key={i} className={`rounded-lg px-3 py-1.5 text-sm ${fa.success ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+                  <div key={i} className={`rounded-lg px-3 py-1.5 text-xs ${fa.success ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
                     {fa.success ? "✅" : "❌"} {fa.action} — {fa.fileName}
                   </div>
                 ))}
@@ -314,7 +314,7 @@ function ResultCard({ result: r, expanded, onToggle }: {
           )}
           {/* Error */}
           {r.error && (
-            <div className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">
+            <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-800">
               <strong>Error:</strong> {r.error}
             </div>
           )}
@@ -333,7 +333,7 @@ function scoreColor(score: number): string {
 
 function ScoreBadge({ label, score }: { label: string; score: number }) {
   return (
-    <div className={`rounded-lg px-3 py-1.5 text-sm font-medium ${scoreColor(score)}`}>
+    <div className={`rounded-lg px-3 py-1.5 text-xs font-medium ${scoreColor(score)}`}>
       {label}: <span className="font-bold">{score.toFixed(1)}</span>/5
     </div>
   );
