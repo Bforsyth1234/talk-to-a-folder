@@ -79,11 +79,11 @@ export default function EvalPage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-4">
             <h1 className="text-lg font-semibold text-gray-900">🧪 Eval Dashboard</h1>
-            <a href="/dashboard" className="text-sm text-blue-600 hover:underline">← Back to app</a>
+            <a href="/dashboard" className="text-sm text-purple-600 hover:underline">← Back to app</a>
           </div>
           <div className="flex items-center gap-3">
             <span className="text-sm text-gray-600">{session.name ?? session.email}</span>
-            <button onClick={signOut} className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-600 hover:bg-gray-50">Sign out</button>
+            <button onClick={signOut} className="rounded-md border border-purple-300 px-3 py-1.5 text-sm text-purple-600 hover:bg-purple-50">Sign out</button>
           </div>
         </div>
       </header>
@@ -103,9 +103,9 @@ export default function EvalPage() {
             </div>
             <button onClick={handleRun} disabled={runState.status === "running" || !selectedFolder || selectedTests.size === 0}
               className={`rounded-lg px-6 py-2 text-sm font-medium text-white transition-colors ${
-                runState.status === "running" ? "bg-amber-500 cursor-wait" :
+                runState.status === "running" ? "bg-yellow-500 cursor-wait" :
                 !selectedFolder || selectedTests.size === 0 ? "bg-gray-400 cursor-not-allowed" :
-                "bg-blue-600 hover:bg-blue-700"
+                "bg-purple-600 hover:bg-purple-700"
               }`}>
               {runState.status === "running" ? "⏳ Running…" : `▶ Run ${selectedTests.size} test${selectedTests.size !== 1 ? "s" : ""}`}
             </button>
@@ -116,7 +116,7 @@ export default function EvalPage() {
         <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
             <h2 className="text-base font-semibold text-gray-900">Test Cases</h2>
-            <button onClick={toggleAll} className="text-xs text-blue-600 hover:underline">
+            <button onClick={toggleAll} className="text-xs text-purple-600 hover:underline">
               {selectedTests.size === tests.length ? "Deselect all" : "Select all"}
             </button>
           </div>
@@ -294,7 +294,7 @@ function ResultCard({ result: r, expanded, onToggle }: {
               <h4 className="mb-1 text-xs font-semibold uppercase text-gray-500">Citations ({r.citationCount})</h4>
               <div className="flex flex-wrap gap-1">
                 {r.citationFiles.map((f, i) => (
-                  <span key={i} className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{f}</span>
+                  <span key={i} className="rounded-full bg-amber-50 px-2 py-0.5 text-xs text-amber-700">{f}</span>
                 ))}
               </div>
             </div>
@@ -326,8 +326,8 @@ function ResultCard({ result: r, expanded, onToggle }: {
 
 function scoreColor(score: number): string {
   if (score >= 4.5) return "text-green-700 bg-green-50";
-  if (score >= 3.5) return "text-blue-700 bg-blue-50";
-  if (score >= 2.5) return "text-amber-700 bg-amber-50";
+  if (score >= 3.5) return "text-purple-700 bg-purple-50";
+  if (score >= 2.5) return "text-yellow-700 bg-yellow-50";
   return "text-red-700 bg-red-50";
 }
 

@@ -89,7 +89,7 @@ export default function DashboardPage() {
             📁 Talk to a Folder
           </h1>
           <div className="flex items-center gap-3">
-            <a href="/eval" className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50">
+            <a href="/eval" className="rounded-md border border-purple-300 px-3 py-1.5 text-sm text-purple-600 transition-colors hover:bg-purple-50">
               🧪 Evals
             </a>
             {session.picture && (
@@ -107,7 +107,7 @@ export default function DashboardPage() {
             </span>
             <button
               onClick={signOut}
-              className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50"
+              className="rounded-md border border-purple-300 px-3 py-1.5 text-sm text-purple-600 transition-colors hover:bg-purple-50"
             >
               Sign out
             </button>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
               value={folderInput}
               onChange={(e) => setFolderInput(e.target.value)}
               placeholder="https://drive.google.com/drive/folders/... or folder ID"
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+              className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm placeholder:text-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none"
               disabled={syncState.status === "loading"}
             />
             <button
@@ -143,8 +143,8 @@ export default function DashboardPage() {
               }
               className={`inline-flex items-center gap-2 rounded-lg px-5 py-2.5 text-sm font-medium text-white transition-colors ${
                 syncState.status === "loading" || !folderInput.trim()
-                  ? "cursor-not-allowed bg-blue-400"
-                  : "bg-blue-600 hover:bg-blue-700"
+                  ? "cursor-not-allowed bg-amber-400"
+                  : "bg-amber-500 hover:bg-amber-600"
               }`}
             >
               {syncState.status === "loading" && (
@@ -196,7 +196,7 @@ export default function DashboardPage() {
                   key={folder.id}
                   className={`flex items-center justify-between rounded-lg border px-4 py-3 transition-colors ${
                     activeFolderId === folder.folderId
-                      ? "border-blue-300 bg-blue-50"
+                      ? "border-purple-300 bg-purple-50"
                       : "border-gray-200 hover:bg-gray-50"
                   }`}
                 >
@@ -412,7 +412,7 @@ function ChatSection({
             <div
               className={`max-w-[80%] rounded-xl px-4 py-3 ${
                 msg.role === "user"
-                  ? "bg-blue-600 text-white"
+                  ? "bg-purple-600 text-white"
                   : "bg-gray-100 text-gray-900"
               }`}
             >
@@ -462,15 +462,15 @@ function ChatSection({
             onChange={(e) => setInput(e.target.value)}
             placeholder="Ask a question…"
             disabled={isStreaming}
-            className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:bg-gray-50"
+            className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm placeholder:text-gray-400 focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 focus:outline-none disabled:bg-gray-50"
           />
           <button
             type="submit"
             disabled={isStreaming || !input.trim()}
             className={`rounded-lg px-5 py-2.5 text-sm font-medium text-white transition-colors ${
               isStreaming || !input.trim()
-                ? "cursor-not-allowed bg-blue-400"
-                : "bg-blue-600 hover:bg-blue-700"
+                ? "cursor-not-allowed bg-amber-400"
+                : "bg-amber-500 hover:bg-amber-600"
             }`}
           >
             Send
@@ -563,7 +563,7 @@ function CitationPill({ citation }: { citation: Citation }) {
       target="_blank"
       rel="noopener noreferrer"
       title={citation.snippet ?? citation.fileName}
-      className="inline-flex items-center gap-1 rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs font-medium text-blue-700 transition-colors hover:bg-blue-100"
+      className="inline-flex items-center gap-1 rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs font-medium text-amber-700 transition-colors hover:bg-amber-100"
     >
       <svg
         className="h-3 w-3 shrink-0"
