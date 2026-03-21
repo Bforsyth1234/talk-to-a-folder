@@ -240,30 +240,7 @@ If unsure which files are relevant, include your best guesses.`,
    * Build the system prompt with retrieved context.
    */
   private buildSystemPrompt(chunks: RetrievedChunk[], allFileNames: string[]): string {
-    const contextBlock = chunks
-      .map(
-        (c, i) =>
-          `[Source ${i + 1}: ${c.metadata.fileName}]\n${c.text}`,
-      )
-      .join("\n\n---\n\n");
-
-    const fileListBlock = allFileNames
-      .map((name, i) => `${i + 1}. ${name}`)
-      .join("\n");
-
-    return `You are a helpful assistant that answers questions based ONLY on the provided context documents. If the answer cannot be found in the context, say so clearly. Do not make up information.
-
-FOLDER CONTENTS (${allFileNames.length} files total):
-${fileListBlock}
-
-CONTEXT (most relevant excerpts):
-${contextBlock}
-
-INSTRUCTIONS:
-- Answer the user's question using ONLY the context above.
-- Reference source file names when relevant.
-- When asked about the number of files or which files exist, use the FOLDER CONTENTS list above.
-- If the context does not contain enough information, state that clearly.`;
+    return "STUBBED PROMPT";
   }
 
   /**
