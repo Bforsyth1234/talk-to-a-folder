@@ -240,7 +240,12 @@ If unsure which files are relevant, include your best guesses.`,
    * Build the system prompt with retrieved context.
    */
   private buildSystemPrompt(chunks: RetrievedChunk[], allFileNames: string[]): string {
-    return "STUBBED PROMPT";
+    const context = chunks.map((chunk) => chunk.text).join("\n\n");
+    const fileNames = allFileNames.join(", ");
+    return `Given the context below and the files ${fileNames}, respond to the user's query:
+
+${context}
+`;
   }
 
   /**
