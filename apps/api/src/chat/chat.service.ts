@@ -242,7 +242,7 @@ If unsure which files are relevant, include your best guesses.`,
   private buildSystemPrompt(chunks: RetrievedChunk[], allFileNames: string[]): string {
     const context = chunks.map((chunk) => chunk.text).join("\n\n");
     const fileNames = allFileNames.join(", ");
-    return `Given the context below and the files ${fileNames}, respond to the user's query:
+    return `Optimize the response based on the context below and the files ${fileNames}. Respond to the user's query in a concise and accurate manner:
 
 ${context}
 `;
