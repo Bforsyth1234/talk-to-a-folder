@@ -1,2 +1,126 @@
 @import "tailwindcss";
 
+:root {
+  /* Primary Blue Colors */
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+  --color-primary-950: #172554;
+
+  /* Secondary Dark Green Colors */
+  --color-secondary-50: #f0fdf4;
+  --color-secondary-100: #dcfce7;
+  --color-secondary-200: #bbf7d0;
+  --color-secondary-300: #86efac;
+  --color-secondary-400: #4ade80;
+  --color-secondary-500: #22c55e;
+  --color-secondary-600: #16a34a;
+  --color-secondary-700: #15803d;
+  --color-secondary-800: #166534;
+  --color-secondary-900: #14532d;
+  --color-secondary-950: #052e16;
+
+  /* Accent Colors */
+  --color-accent-blue: #2563eb;
+  --color-accent-green: #166534;
+  
+  /* Semantic Colors */
+  --color-success: #16a34a;
+  --color-warning: #d97706;
+  --color-error: #dc2626;
+  --color-info: #2563eb;
+  
+  /* Background Colors */
+  --color-bg-primary: #ffffff;
+  --color-bg-secondary: #f8fafc;
+  --color-bg-tertiary: #f1f5f9;
+  
+  /* Text Colors */
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #475569;
+  --color-text-muted: #64748b;
+  --color-text-inverse: #ffffff;
+  
+  /* Border Colors */
+  --color-border-primary: #e2e8f0;
+  --color-border-secondary: #cbd5e1;
+  --color-border-accent: var(--color-primary-600);
+}
+
+/* Override default Tailwind colors with our custom scheme */
+.bg-blue-600 {
+  background-color: var(--color-primary-600) !important;
+}
+
+.hover\:bg-blue-700:hover {
+  background-color: var(--color-primary-700) !important;
+}
+
+.active\:bg-blue-800:active {
+  background-color: var(--color-primary-800) !important;
+}
+
+.bg-gray-50 {
+  background-color: var(--color-bg-secondary) !important;
+}
+
+.text-gray-900 {
+  color: var(--color-text-primary) !important;
+}
+
+.border-amber-200 {
+  border-color: var(--color-secondary-200) !important;
+}
+
+.bg-amber-50 {
+  background-color: var(--color-secondary-50) !important;
+}
+
+.text-amber-800 {
+  color: var(--color-secondary-800) !important;
+}
+
+.bg-gray-400 {
+  background-color: var(--color-text-secondary) !important;
+}
+
+/* Custom utility classes for our color scheme */
+.bg-primary {
+  background-color: var(--color-primary-600);
+}
+
+.bg-primary-hover:hover {
+  background-color: var(--color-primary-700);
+}
+
+.bg-secondary {
+  background-color: var(--color-secondary-600);
+}
+
+.bg-secondary-hover:hover {
+  background-color: var(--color-secondary-700);
+}
+
+.text-primary {
+  color: var(--color-primary-600);
+}
+
+.text-secondary {
+  color: var(--color-secondary-600);
+}
+
+.border-primary {
+  border-color: var(--color-primary-600);
+}
+
+.border-secondary {
+  border-color: var(--color-secondary-600);
+}
+
