@@ -35,7 +35,7 @@ function ConfiguredSignInButton() {
       className={`inline-flex items-center gap-2.5 rounded-lg px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors ${
         isLoading
           ? "cursor-not-allowed bg-gray-400"
-          : "cursor-pointer bg-blue-500 hover:bg-blue-700 active:bg-blue-800"
+          : "cursor-pointer bg-purple-600 hover:bg-purple-700 active:bg-purple-800"
       }`}
     >
       <svg width="20" height="20" viewBox="0 0 48 48">
