@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Todo } from "@repo/shared/todo";
+import { Todo } from "@talk-to-a-folder/shared";
 
 interface TodoItemProps {
   todo: Todo;
