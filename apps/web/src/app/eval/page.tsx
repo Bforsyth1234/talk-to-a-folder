@@ -322,6 +322,7 @@ function ResultCard({ result: r, expanded, onToggle }: {
               <div className="mb-1 flex items-center justify-between">
                 <h4 className="text-xs font-semibold uppercase text-gray-500">Answer</h4>
                 <button
+                  type="button"
                   onClick={() => copyToClipboard(r.answer!, 'Answer')}
                   className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
                   title="Copy answer to clipboard"
