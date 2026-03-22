@@ -12,7 +12,11 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
       <body className="bg-gray-50 text-gray-900 antialiased">
-        <Providers>{children}</Providers>
+        <Providers>
+          <header className="bg-blue-500 text-white">
+            {children}
+          </header>
+        </Providers>
       </body>
     </html>
   );
