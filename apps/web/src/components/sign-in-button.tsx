@@ -35,7 +35,7 @@ function ConfiguredSignInButton() {
       className={`inline-flex items-center gap-2.5 rounded-lg px-6 py-3 text-sm font-medium text-white shadow-sm transition-colors ${
         isLoading
           ? "cursor-not-allowed bg-gray-400"
-          : "cursor-pointer bg-blue-500 hover:bg-blue-700 active:bg-blue-800"
+          : "cursor-pointer bg-purple-600 hover:bg-purple-700 active:bg-purple-800"
       }`}
     >
       <svg width="20" height="20" viewBox="0 0 48 48">
@@ -64,7 +64,7 @@ function ConfiguredSignInButton() {
 export function SignInButton() {
   if (!GOOGLE_CLIENT_ID) {
     return (
-      <div className="w-full rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+      <div className="w-full rounded-lg border border-yellow-400 bg-yellow-50 px-4 py-3 text-sm text-gray-800">
         Google sign-in is not configured. Set
         {" "}<code>NEXT_PUBLIC_GOOGLE_CLIENT_ID</code>{" "}
         on the Railway web service, then redeploy.

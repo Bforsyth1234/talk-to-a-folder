@@ -13,7 +13,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body className="bg-gray-50 text-gray-900 antialiased">
         <Providers>
-          <header className="bg-blue-500 text-white">
+          <header className="bg-purple-600 text-white">
             {children}
           </header>
         </Providers>
