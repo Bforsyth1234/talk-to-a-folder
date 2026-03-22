@@ -63,13 +63,35 @@ export default function TodoItem({ todo, onToggle, onEdit, onDelete }: TodoItemP
       )}
 
       <div className="flex gap-1">
-        <button
-          onClick={() => setIsEditing(!isEditing)}
-          className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
-          title="Edit"
-        >
-          ✏️
-        </button>
+        {isEditing ? (
+          <button
+            onClick={handleEdit}
+            className="rounded p-1 text-gray-400 hover:bg-green-100 hover:text-green-600"
+            title="Save"
+          >
+            ✔️
+          </button>
+        ) : (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="rounded p-1 text-gray-400 hover:bg-gray-100 hover:text-gray-600"
+            title="Edit"
+          >
+            ✏️
+          </button>
+        )}
+        {isEditing && (
+          <button
+            onClick={() => {
+              setEditText(todo.text);
+              setIsEditing(false);
+            }}
+            className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
+            title="Cancel"
+          >
+            ❌
+          </button>
+        )}
         <button
           onClick={() => onDelete(todo.id)}
           className="rounded p-1 text-gray-400 hover:bg-red-50 hover:text-red-600"
