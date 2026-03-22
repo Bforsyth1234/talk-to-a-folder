@@ -18,7 +18,20 @@ const TodoList = () => {
   useEffect(() => {
     const savedTodos = localStorage.getItem('todos');
     if (savedTodos) {
-      setTodos(JSON.parse(savedTodos));
+      try {
+        const parsedTodos = JSON.parse(savedTodos);
+        if (Array.isArray(parsedTodos)) {
+          setTodos(parsedTodos);
+        } else {
+          console.error('Invalid todos data in localStorage. Initializing with empty array.');
+          setTodos([]);
+          localStorage.removeItem('todos');
+        }
+      } catch (error) {
+        console.error('Error parsing todos from localStorage:', error);
+        setTodos([]);
+        localStorage.removeItem('todos');
+      }
     }
   }, []);
 
