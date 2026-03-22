@@ -15,6 +15,7 @@ export function TodoItem({ todo, onUpdate, onDelete, onToggleComplete }: TodoIte
   const [editText, setEditText] = useState(todo.text);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const hasSavedRef = useRef(false);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -24,6 +25,13 @@ export function TodoItem({ todo, onUpdate, onDelete, onToggleComplete }: TodoIte
   }, [isEditing]);
 
   const handleSave = () => {
+    // Prevent duplicate saves in the same edit session
+    if (hasSavedRef.current) {
+      return;
+    }
+    
+    hasSavedRef.current = true;
+    
     const trimmedText = editText.trim();
     if (trimmedText && trimmedText !== todo.text) {
       onUpdate(todo.id, { text: trimmedText });
@@ -74,7 +82,10 @@ export function TodoItem({ todo, onUpdate, onDelete, onToggleComplete }: TodoIte
         />
       ) : (
         <span
-          onDoubleClick={() => setIsEditing(true)}
+          onDoubleClick={() => {
+            setIsEditing(true);
+            hasSavedRef.current = false; // Reset save flag when entering edit mode
+          }}
           className={`flex-1 cursor-text select-none text-sm ${
             todo.completed ? 'text-gray-500 line-through' : 'text-gray-900'
           }`}
