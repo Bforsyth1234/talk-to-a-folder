@@ -234,6 +234,17 @@ function ResultCard({ result: r, expanded, onToggle }: {
   expanded: boolean;
   onToggle: () => void;
 }) {
+  const [copySuccess, setCopySuccess] = useState<string | null>(null);
+
+  const copyToClipboard = async (text: string, label: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopySuccess(label);
+      setTimeout(() => setCopySuccess(null), 2000);
+    } catch (err) {
+      console.error('Failed to copy text: ', err);
+    }
+  };
   return (
     <div className={`rounded-xl border bg-white shadow-sm overflow-hidden ${r.passed ? "border-green-200" : "border-red-200"}`}>
       <button onClick={onToggle} className="flex w-full items-center gap-3 px-5 py-3 text-left hover:bg-gray-50">
@@ -284,7 +295,26 @@ function ResultCard({ result: r, expanded, onToggle }: {
           {/* Answer preview */}
           {r.answer && (
             <div>
-              <h4 className="mb-1 text-xs font-semibold uppercase text-gray-500">Answer</h4>
+              <div className="mb-1 flex items-center justify-between">
+                <h4 className="text-xs font-semibold uppercase text-gray-500">Answer</h4>
+                <button
+                  onClick={() => copyToClipboard(r.answer!, 'Answer')}
+                  className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
+                  title="Copy answer to clipboard"
+                >
+                  {copySuccess === 'Answer' ? (
+                    <>
+                      <span className="text-green-600">✓</span>
+                      <span className="text-green-600">Copied!</span>
+                    </>
+                  ) : (
+                    <>
+                      <span>📋</span>
+                      <span>Copy</span>
+                    </>
+                  )}
+                </button>
+              </div>
               <pre className="max-h-40 overflow-auto rounded-lg bg-gray-50 p-3 text-xs text-gray-700 whitespace-pre-wrap">{r.answer}</pre>
             </div>
           )}
