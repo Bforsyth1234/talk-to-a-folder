@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { getSavedFolders, getEvalTests, runEvalStream } from "@/lib/api-client";
@@ -235,11 +235,33 @@ function ResultCard({ result: r, expanded, onToggle }: {
   onToggle: () => void;
 }) {
   const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error' | 'fallback'>('idle');
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check if clipboard API is available
   const isClipboardAvailable = typeof navigator !== 'undefined' && 
     navigator.clipboard && 
     typeof navigator.clipboard.writeText === 'function';
+
+  // Clear any existing timeout and set a new one
+  const setTimedCopyState = (state: 'copied' | 'error' | 'fallback', duration: number) => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+    setCopyState(state);
+    timeoutRef.current = setTimeout(() => {
+      setCopyState('idle');
+      timeoutRef.current = null;
+    }, duration);
+  };
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const copyToClipboard = async (text: string) => {
     if (!isClipboardAvailable) {
@@ -259,27 +281,22 @@ function ResultCard({ result: r, expanded, onToggle }: {
         document.body.removeChild(textArea);
         
         if (successful) {
-          setCopyState('copied');
-          setTimeout(() => setCopyState('idle'), 2000);
+          setTimedCopyState('copied', 2000);
         } else {
-          setCopyState('fallback');
-          setTimeout(() => setCopyState('idle'), 3000);
+          setTimedCopyState('fallback', 3000);
         }
       } catch (err) {
-        setCopyState('fallback');
-        setTimeout(() => setCopyState('idle'), 3000);
+        setTimedCopyState('fallback', 3000);
       }
       return;
     }
 
     try {
       await navigator.clipboard.writeText(text);
-      setCopyState('copied');
-      setTimeout(() => setCopyState('idle'), 2000);
+      setTimedCopyState('copied', 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);
-      setCopyState('error');
-      setTimeout(() => setCopyState('idle'), 3000);
+      setTimedCopyState('error', 3000);
     }
   };
   return (
