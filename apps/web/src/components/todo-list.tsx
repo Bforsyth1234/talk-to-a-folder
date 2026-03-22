@@ -30,21 +30,21 @@ export function TodoList() {
       completed: false,
       createdAt: new Date()
     };
-    setTodos([...todos, newTodo]);
+    setTodos(prev => [...prev, newTodo]);
   };
 
   const toggleTodo = (id: string) => {
-    setTodos(todos.map(todo =>
+    setTodos(prev => prev.map(todo =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     ));
   };
 
   const deleteTodo = (id: string) => {
-    setTodos(todos.filter(todo => todo.id !== id));
+    setTodos(prev => prev.filter(todo => todo.id !== id));
   };
 
   const clearCompleted = () => {
-    setTodos(todos.filter(todo => !todo.completed));
+    setTodos(prev => prev.filter(todo => !todo.completed));
   };
 
   const completedCount = todos.filter(todo => todo.completed).length;
