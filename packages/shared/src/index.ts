@@ -82,3 +82,16 @@ export {
   type FileContentResponse,
 } from "./file-operations.js";
 
+export {
+  TodoSchema,
+  type Todo,
+  CreateTodoRequestSchema,
+  type CreateTodoRequest,
+  UpdateTodoRequestSchema,
+  type UpdateTodoRequest,
+  DeleteTodoRequestSchema,
+  type DeleteTodoRequest,
+  TodoListResponseSchema,
+  type TodoListResponse,
+} from "./todo.js";
+
