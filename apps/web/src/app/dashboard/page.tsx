@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { ingestFolder, streamChat, getSavedFolders, deleteSavedFolder } from "@/lib/api-client";
+import { Timer } from "@/components/timer";
 import type { IngestResponse, ChatMessage, Citation, SavedFolder, FileActionResult } from "@talk-to-a-folder/shared";
 
 type SyncState =
@@ -89,6 +90,7 @@ export default function DashboardPage() {
             📁 Talk to a Folder
           </h1>
           <div className="flex items-center gap-3">
+            <Timer />
             <a href="/eval" className="rounded-md border border-gray-300 px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50">
               🧪 Evals
             </a>
