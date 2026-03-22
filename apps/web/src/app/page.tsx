@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { SignInButton } from "@/components/sign-in-button";
+import TodoList from "@/components/TodoList";
 
 export default function Home() {
   const { session } = useAuth();
@@ -39,6 +40,11 @@ export default function Home() {
             We only request read-only access to your Drive.
           </p>
         </div>
+      </div>
+      
+      {/* Todo List Section */}
+      <div className="w-full">
+        <TodoList />
       </div>
     </main>
   );

@@ -4,3 +4,20 @@
   color: #0066cc;
 }
 
+/* CSS Variables for TodoList component */
+:root {
+  --card-bg: #ffffff;
+  --border-radius: 8px;
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --text-primary: #1f2937;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --primary-color: #3b82f6;
+  --primary-hover: #2563eb;
+  --item-bg: #f8fafc;
+  --item-hover-bg: #f1f5f9;
+  --completed-bg: #f0f9ff;
+  --danger-color: #ef4444;
+  --danger-hover: #dc2626;
+}
+
