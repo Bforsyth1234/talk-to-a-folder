@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { SignInButton } from "@/components/sign-in-button";
+import Timer from "@/components/timer";
 
 export default function Home() {
   const { session } = useAuth();
@@ -38,6 +39,13 @@ export default function Home() {
             <br />
             We only request read-only access to your Drive.
           </p>
+        </div>
+
+        <div className="mt-8">
+          <h2 className="text-lg font-semibold text-gray-700 text-center mb-4">
+            Timer
+          </h2>
+          <Timer />
         </div>
       </div>
     </main>
