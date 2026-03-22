@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { SignInButton } from "@/components/sign-in-button";
+import TodoList from "@/components/TodoList/TodoList";
 
 export default function Home() {
   const { session } = useAuth();
@@ -16,8 +17,8 @@ export default function Home() {
   }, [session, router]);
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="w-full max-w-md rounded-2xl bg-white p-10 shadow-lg">
+    <div className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+      <div className="w-full max-w-md rounded-2xl bg-white p-10 shadow-lg mb-8">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-blue-600 text-2xl text-white">
             📁
@@ -40,7 +41,12 @@ export default function Home() {
           </p>
         </div>
       </div>
-    </main>
+
+      {/* Todo List Section */}
+      <div className="w-full max-w-4xl">
+        <TodoList />
+      </div>
+    </div>
   );
 }
 
