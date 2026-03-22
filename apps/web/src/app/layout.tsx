@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import { useAuth } from "./lib/auth-context";
 import { Providers } from "./providers";
 import "./globals.css";
 
@@ -13,9 +14,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body className="bg-gray-50 text-gray-900 antialiased">
         <Providers>
-          <header className="bg-blue-500 text-white">
-            {children}
-          </header>
+          {({ session }) => (
+            <header className="bg-blue-500 text-white">
+              {children}
+              {session && <TodoList />}
+            </header>
+          )}
         </Providers>
       </body>
     </html>
