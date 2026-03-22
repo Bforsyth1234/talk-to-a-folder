@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { getSavedFolders, getEvalTests, runEvalStream } from "@/lib/api-client";
@@ -235,23 +235,38 @@ function ResultCard({ result: r, expanded, onToggle }: {
   onToggle: () => void;
 }) {
   const [copyState, setCopyState] = useState<{ type: 'idle' | 'success' | 'error'; label?: string }>({ type: 'idle' });
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Clear timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const copyToClipboard = async (text: string, label: string) => {
+    // Clear any existing timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
     // Check if clipboard API is available
     if (!navigator.clipboard) {
       setCopyState({ type: 'error', label });
-      setTimeout(() => setCopyState({ type: 'idle' }), 3000);
+      timeoutRef.current = setTimeout(() => setCopyState({ type: 'idle' }), 3000);
       return;
     }
 
     try {
       await navigator.clipboard.writeText(text);
       setCopyState({ type: 'success', label });
-      setTimeout(() => setCopyState({ type: 'idle' }), 2000);
+      timeoutRef.current = setTimeout(() => setCopyState({ type: 'idle' }), 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);
       setCopyState({ type: 'error', label });
-      setTimeout(() => setCopyState({ type: 'idle' }), 3000);
+      timeoutRef.current = setTimeout(() => setCopyState({ type: 'idle' }), 3000);
     }
   };
   return (
