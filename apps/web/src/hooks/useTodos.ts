@@ -10,12 +10,11 @@ export const useTodos = () => {
 
   // Load todos from localStorage on mount
   useEffect(() => {
-    const savedTodos = storage.get<Todo[]>(TODOS_STORAGE_KEY) || [];
-    // Convert date strings back to Date objects
-    const todosWithDates = savedTodos.map(todo => ({
+    const savedTodos = storage.get<Todo[]>(TODOS_STORAGE_KEY);
+    const todosWithDates = Array.isArray(savedTodos) ? savedTodos.map(todo => ({
       ...todo,
       createdAt: new Date(todo.createdAt)
-    }));
+    })) : [];
     setTodos(todosWithDates);
     setIsLoading(false);
   }, []);
