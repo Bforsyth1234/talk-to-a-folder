@@ -16,6 +16,7 @@ export function TodoItem({ todo, onUpdate, onDelete, onToggleComplete }: TodoIte
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const hasSavedRef = useRef(false);
+  const deleteTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (isEditing && inputRef.current) {
@@ -23,6 +24,14 @@ export function TodoItem({ todo, onUpdate, onDelete, onToggleComplete }: TodoIte
       inputRef.current.select();
     }
   }, [isEditing]);
+
+  useEffect(() => {
+    return () => {
+      if (deleteTimeoutRef.current) {
+        clearTimeout(deleteTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSave = () => {
     // Prevent duplicate saves in the same edit session
@@ -55,7 +64,7 @@ export function TodoItem({ todo, onUpdate, onDelete, onToggleComplete }: TodoIte
       onDelete(todo.id);
     } else {
       setShowDeleteConfirm(true);
-      setTimeout(() => setShowDeleteConfirm(false), 3000);
+      deleteTimeoutRef.current = setTimeout(() => setShowDeleteConfirm(false), 3000);
     }
   };
 
