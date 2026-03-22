@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { SignInButton } from "@/components/sign-in-button";
+import TodoList from "@/components/TodoList/TodoList";
 
 export default function Home() {
   const { session } = useAuth();
@@ -39,6 +40,19 @@ export default function Home() {
             We only request read-only access to your Drive.
           </p>
         </div>
+      </div>
+
+      {/* Demo Todo List */}
+      <div className="mt-8 w-full max-w-2xl">
+        <div className="mb-4 text-center">
+          <h2 className="text-lg font-semibold text-gray-700">
+            Try our Todo List Demo
+          </h2>
+          <p className="text-sm text-gray-500">
+            A simple todo list with local storage persistence
+          </p>
+        </div>
+        <TodoList />
       </div>
     </main>
   );
