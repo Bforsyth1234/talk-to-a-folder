@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { ingestFolder, streamChat, getSavedFolders, deleteSavedFolder } from "@/lib/api-client";
+import { TodoList } from "@/components/TodoList";
 import type { IngestResponse, ChatMessage, Citation, SavedFolder, FileActionResult } from "@talk-to-a-folder/shared";
 
 type SyncState =
@@ -117,8 +118,11 @@ export default function DashboardPage() {
 
       {/* Main content */}
       <main className="mx-auto w-full max-w-5xl flex-1 px-6 py-8">
+        {/* Todo List section */}
+        <TodoList />
+
         {/* Folder sync section */}
-        <section className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <section className="mt-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
           <h2 className="mb-1 text-base font-semibold text-gray-900">
             Sync a Google Drive Folder
           </h2>
