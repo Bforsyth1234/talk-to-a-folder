@@ -30,7 +30,11 @@ export const useTodos = () => {
 
   // Save to localStorage whenever todos change
   useEffect(() => {
-    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
+    try {
+      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
+    } catch (error) {
+      console.warn('Failed to save todos to localStorage:', error);
+    }
   }, [todos]);
 
   const addTodo = (text: string) => {
