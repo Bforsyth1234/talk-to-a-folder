@@ -1,0 +1,59 @@
+import { useState, useEffect } from 'react';
+
+interface TodoItem {
+  id: string;
+  text: string;
+  completed: boolean;
+  createdAt: Date;
+}
+
+const LOCAL_STORAGE_KEY = 'todoList';
+
+export const useTodos = () => {
+  const [todos, setTodos] = useState<TodoItem[]>([]);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem(LOCAL_STORAGE_KEY);
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setTodos(parsed.map(todo => ({
+          ...todo,
+          createdAt: new Date(todo.createdAt)
+        })));
+      } catch (error) {
+        console.warn('Failed to load todos from localStorage');
+      }
+    }
+  }, []);
+
+  // Save to localStorage whenever todos change
+  useEffect(() => {
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(todos));
+  }, [todos]);
+
+  const addTodo = (text: string) => {
+    const newTodo: TodoItem = {
+      id: crypto.randomUUID(),
+      text: text.trim(),
+      completed: false,
+      createdAt: new Date()
+    };
+    setTodos(prev => [newTodo, ...prev]);
+  };
+
+  const toggleTodo = (id: string) => {
+    setTodos(prev => prev.map(todo => 
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
+  };
+
+  const deleteTodo = (id: string) => {
+    setTodos(prev => prev.filter(todo => todo.id !== id));
+  };
+
+  return { todos, addTodo, toggleTodo, deleteTodo };
+};
+
+export type { TodoItem };
