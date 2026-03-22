@@ -33,6 +33,22 @@ export default function Home() {
 
         <div className="flex flex-col items-center gap-4">
           <SignInButton />
+          {session && (
+            <div className="flex gap-3">
+              <button
+                onClick={() => router.push("/dashboard")}
+                className="rounded-lg bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+              >
+                Dashboard
+              </button>
+              <button
+                onClick={() => router.push("/todos")}
+                className="rounded-lg border border-blue-600 px-4 py-2 text-sm font-medium text-blue-600 hover:bg-blue-50 transition-colors"
+              >
+                My Todos
+              </button>
+            </div>
+          )}
           <p className="text-xs text-gray-400">
             Sign in with your Google account to get started.
             <br />
