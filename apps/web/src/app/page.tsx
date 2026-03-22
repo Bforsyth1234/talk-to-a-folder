@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { SignInButton } from "@/components/sign-in-button";
+import { TodoList } from "@/components/TodoList/TodoList";
 
 export default function Home() {
   const { session } = useAuth();
@@ -17,7 +18,7 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
-      <div className="w-full max-w-md rounded-2xl bg-white p-10 shadow-lg">
+      <div className="w-full max-w-md rounded-2xl bg-white p-10 shadow-lg mb-8">
         <div className="mb-8 text-center">
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-blue-600 text-2xl text-white">
             📁
@@ -39,6 +40,19 @@ export default function Home() {
             We only request read-only access to your Drive.
           </p>
         </div>
+      </div>
+
+      {/* Todo List Demo Section */}
+      <div className="w-full max-w-4xl px-4">
+        <div className="text-center mb-6">
+          <h2 className="text-xl font-semibold text-gray-800 mb-2">
+            Demo: Todo List with Local Storage
+          </h2>
+          <p className="text-sm text-gray-600">
+            Try out this todo list while you wait! Your todos are saved locally in your browser.
+          </p>
+        </div>
+        <TodoList />
       </div>
     </main>
   );
