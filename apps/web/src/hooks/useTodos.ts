@@ -38,8 +38,16 @@ export const useTodos = () => {
   }, [todos]);
 
   const addTodo = (text: string) => {
+    const generateId = () => {
+      if (typeof crypto !== 'undefined' && crypto.randomUUID) {
+        return crypto.randomUUID();
+      } else {
+        return `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+      }
+    };
+
     const newTodo: TodoItem = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       text: text.trim(),
       completed: false,
       createdAt: new Date()
