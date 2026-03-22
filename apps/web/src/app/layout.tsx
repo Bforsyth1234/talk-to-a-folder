@@ -13,9 +13,16 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body className="bg-gray-50 text-gray-900 antialiased">
         <Providers>
-          <header className="bg-blue-500 text-white">
-            {children}
+          <header className="bg-blue-600 text-white shadow-sm">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+              <div className="flex justify-between items-center py-4">
+                <h1 className="text-xl font-semibold">Talk to a Folder</h1>
+              </div>
+            </div>
           </header>
+          <main className="min-h-screen">
+            {children}
+          </main>
         </Providers>
       </body>
     </html>
