@@ -17,6 +17,7 @@ export const TodoItem: React.FC<TodoItemProps> = ({ todo, onToggle, onDelete }) 
         type="checkbox"
         checked={todo.completed}
         onChange={() => onToggle(todo.id)}
+        aria-label={todo.completed ? `Unmark '${todo.text}' as complete` : `Mark '${todo.text}' as complete`}
         className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500"
       />
       <span className={`flex-1 ${
