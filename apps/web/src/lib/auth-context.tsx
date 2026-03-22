@@ -135,7 +135,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     [state, handleAuthCallback, signOut, accessToken],
   );
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <AuthContext.Provider value={value}>
+      <div className="transition duration-300 ease-in-out">{children}</div>
+    </AuthContext.Provider>
+  );
 }
 
 export function useAuth(): AuthContextValue {
