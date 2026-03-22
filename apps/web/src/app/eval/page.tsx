@@ -234,15 +234,52 @@ function ResultCard({ result: r, expanded, onToggle }: {
   expanded: boolean;
   onToggle: () => void;
 }) {
-  const [copyState, setCopyState] = useState<'idle' | 'copied'>('idle');
+  const [copyState, setCopyState] = useState<'idle' | 'copied' | 'error' | 'fallback'>('idle');
+
+  // Check if clipboard API is available
+  const isClipboardAvailable = typeof navigator !== 'undefined' && 
+    navigator.clipboard && 
+    typeof navigator.clipboard.writeText === 'function';
 
   const copyToClipboard = async (text: string) => {
+    if (!isClipboardAvailable) {
+      // Fallback: select the text for manual copying
+      try {
+        const textArea = document.createElement('textarea');
+        textArea.value = text;
+        textArea.style.position = 'fixed';
+        textArea.style.left = '-999999px';
+        textArea.style.top = '-999999px';
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        // Try the legacy execCommand as fallback
+        const successful = document.execCommand('copy');
+        document.body.removeChild(textArea);
+        
+        if (successful) {
+          setCopyState('copied');
+          setTimeout(() => setCopyState('idle'), 2000);
+        } else {
+          setCopyState('fallback');
+          setTimeout(() => setCopyState('idle'), 3000);
+        }
+      } catch (err) {
+        setCopyState('fallback');
+        setTimeout(() => setCopyState('idle'), 3000);
+      }
+      return;
+    }
+
     try {
       await navigator.clipboard.writeText(text);
       setCopyState('copied');
       setTimeout(() => setCopyState('idle'), 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);
+      setCopyState('error');
+      setTimeout(() => setCopyState('idle'), 3000);
     }
   };
   return (
@@ -299,8 +336,16 @@ function ResultCard({ result: r, expanded, onToggle }: {
                 <h4 className="text-xs font-semibold uppercase text-gray-500">Answer</h4>
                 <button
                   onClick={() => copyToClipboard(r.answer)}
-                  className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
-                  title="Copy answer to clipboard"
+                  className={`flex items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors ${
+                    !isClipboardAvailable 
+                      ? "text-gray-400 hover:bg-gray-100 hover:text-gray-600" 
+                      : "text-gray-500 hover:bg-gray-100 hover:text-gray-700"
+                  }`}
+                  title={
+                    !isClipboardAvailable 
+                      ? "Clipboard API unavailable - will try fallback method"
+                      : "Copy answer to clipboard"
+                  }
                 >
                   {copyState === 'copied' ? (
                     <>
@@ -309,12 +354,26 @@ function ResultCard({ result: r, expanded, onToggle }: {
                       </svg>
                       <span className="text-green-600">Copied!</span>
                     </>
+                  ) : copyState === 'error' ? (
+                    <>
+                      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                      <span className="text-red-600">Failed</span>
+                    </>
+                  ) : copyState === 'fallback' ? (
+                    <>
+                      <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                      <span className="text-amber-600">Select text manually</span>
+                    </>
                   ) : (
                     <>
                       <svg className="h-3 w-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                       </svg>
-                      <span>Copy</span>
+                      <span>{!isClipboardAvailable ? "Try Copy" : "Copy"}</span>
                     </>
                   )}
                 </button>
