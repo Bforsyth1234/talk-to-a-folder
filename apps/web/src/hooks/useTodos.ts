@@ -18,12 +18,26 @@ export const useTodos = () => {
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
-        setTodos(parsed.map(todo => ({
-          ...todo,
-          createdAt: new Date(todo.createdAt)
-        })));
+        if (Array.isArray(parsed)) {
+          const validatedTodos = parsed.map((todo: any) => {
+            if (todo.id && todo.text && typeof todo.completed === 'boolean' && todo.createdAt) {
+              return {
+                ...todo,
+                createdAt: new Date(todo.createdAt)
+              };
+            } else {
+              console.warn('Invalid todo item:', todo);
+              return null;
+            }
+          }).filter(Boolean);
+          setTodos(validatedTodos);
+        } else {
+          console.warn('Invalid todos data:', parsed);
+          setTodos([]);
+        }
       } catch (error) {
         console.warn('Failed to load todos from localStorage');
+        setTodos([]);
       }
     }
   }, []);
