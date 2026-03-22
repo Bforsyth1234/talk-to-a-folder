@@ -3,8 +3,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
-import { ingestFolder, streamChat, getSavedFolders, deleteSavedFolder } from "@/lib/api-client";
-import type { IngestResponse, ChatMessage, Citation, SavedFolder, FileActionResult } from "@talk-to-a-folder/shared";
+import { ingestFolder, streamChat, getSavedFolders, deleteSavedFolder, listFolderFiles } from "@/lib/api-client";
+import type { IngestResponse, ChatMessage, Citation, SavedFolder, FileActionResult, DriveFileInfo } from "@talk-to-a-folder/shared";
 
 type SyncState =
   | { status: "idle" }
@@ -19,6 +19,9 @@ export default function DashboardPage() {
   const [syncState, setSyncState] = useState<SyncState>({ status: "idle" });
   const [savedFolders, setSavedFolders] = useState<SavedFolder[]>([]);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
+  const [hoveredFolderId, setHoveredFolderId] = useState<string | null>(null);
+  const [folderFiles, setFolderFiles] = useState<Record<string, DriveFileInfo[]>>({});
+  const [loadingFiles, setLoadingFiles] = useState<Record<string, boolean>>({});
 
   const loadFolders = useCallback(async () => {
     if (!accessToken) return;
@@ -76,6 +79,28 @@ export default function DashboardPage() {
     } catch {
       // silently fail
     }
+  };
+
+  const handleFolderHover = async (folderId: string) => {
+    setHoveredFolderId(folderId);
+    
+    // Don't fetch if we already have the files or are currently loading
+    if (folderFiles[folderId] || loadingFiles[folderId]) return;
+    
+    setLoadingFiles(prev => ({ ...prev, [folderId]: true }));
+    try {
+      const response = await listFolderFiles(folderId, accessToken);
+      setFolderFiles(prev => ({ ...prev, [folderId]: response.files }));
+    } catch {
+      // silently fail - dropdown will show empty state
+      setFolderFiles(prev => ({ ...prev, [folderId]: [] }));
+    } finally {
+      setLoadingFiles(prev => ({ ...prev, [folderId]: false }));
+    }
+  };
+
+  const handleFolderLeave = () => {
+    setHoveredFolderId(null);
   };
 
   const folderId = activeFolderId;
@@ -194,11 +219,13 @@ export default function DashboardPage() {
               {savedFolders.map((folder) => (
                 <div
                   key={folder.id}
-                  className={`flex items-center justify-between rounded-lg border px-4 py-3 transition-colors ${
+                  className={`relative flex items-center justify-between rounded-lg border px-4 py-3 transition-colors ${
                     activeFolderId === folder.folderId
                       ? "border-blue-300 bg-blue-50"
                       : "border-gray-200 hover:bg-gray-50"
                   }`}
+                  onMouseEnter={() => void handleFolderHover(folder.folderId)}
+                  onMouseLeave={handleFolderLeave}
                 >
                   <button
                     type="button"
@@ -223,6 +250,14 @@ export default function DashboardPage() {
                       <path strokeLinecap="round" strokeLinejoin="round" d="m14.74 9-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 0 1-2.244 2.077H8.084a2.25 2.25 0 0 1-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 0 0-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 0 1 3.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 0 0-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 0 0-7.5 0" />
                     </svg>
                   </button>
+                  
+                  {/* Files Dropdown */}
+                  {hoveredFolderId === folder.folderId && (
+                    <FolderFilesDropdown
+                      files={folderFiles[folder.folderId] || []}
+                      isLoading={loadingFiles[folder.folderId] || false}
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -580,6 +615,112 @@ function CitationPill({ citation }: { citation: Citation }) {
       </svg>
       {citation.fileName}
     </a>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Folder Files Dropdown
+// ---------------------------------------------------------------------------
+
+function getFileIcon(fileName: string): string {
+  const extension = fileName.split('.').pop()?.toLowerCase();
+  const iconMap: Record<string, string> = {
+    'pdf': '📄',
+    'doc': '📝',
+    'docx': '📝',
+    'txt': '📄',
+    'md': '📝',
+    'jpg': '🖼️',
+    'jpeg': '🖼️',
+    'png': '🖼️',
+    'gif': '🖼️',
+    'svg': '🖼️',
+    'mp4': '🎥',
+    'mov': '🎥',
+    'avi': '🎥',
+    'mp3': '🎵',
+    'wav': '🎵',
+    'zip': '📦',
+    'rar': '📦',
+    'csv': '📊',
+    'xlsx': '📊',
+    'xls': '📊',
+    'ppt': '📊',
+    'pptx': '📊',
+  };
+  return iconMap[extension || ''] || '📄';
+}
+
+function FolderFilesDropdown({ 
+  files, 
+  isLoading 
+}: { 
+  files: DriveFileInfo[]; 
+  isLoading: boolean; 
+}) {
+  if (isLoading) {
+    return (
+      <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
+        <div className="flex items-center gap-2 text-sm text-gray-500">
+          <div className="h-4 w-4 animate-spin rounded-full border-2 border-gray-300 border-t-blue-600" />
+          Loading files...
+        </div>
+      </div>
+    );
+  }
+
+  if (files.length === 0) {
+    return (
+      <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
+        <div className="text-sm text-gray-500">No files found</div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="absolute left-0 top-full z-50 mt-1 w-80 rounded-lg border border-gray-200 bg-white shadow-lg">
+      <div className="max-h-64 overflow-y-auto">
+        <div className="border-b border-gray-100 px-3 py-2">
+          <div className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+            Files ({files.length})
+          </div>
+        </div>
+        {files.map((file) => (
+          <a
+            key={file.id}
+            href={`https://drive.google.com/file/d/${file.id}/view`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-3 px-3 py-2 text-sm transition-colors hover:bg-gray-50"
+          >
+            <span className="text-lg">{getFileIcon(file.name)}</span>
+            <div className="flex-1 min-w-0">
+              <div className="truncate font-medium text-gray-900">
+                {file.name}
+              </div>
+              {file.mimeType && (
+                <div className="text-xs text-gray-500 truncate">
+                  {file.mimeType.split('/').pop()?.toUpperCase()}
+                </div>
+              )}
+            </div>
+            <svg
+              className="h-4 w-4 text-gray-400"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={2}
+              stroke="currentColor"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"
+              />
+            </svg>
+          </a>
+        ))}
+      </div>
+    </div>
   );
 }
 
