@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { SignInButton } from "@/components/sign-in-button";
 
@@ -33,6 +34,14 @@ export default function Home() {
 
         <div className="flex flex-col items-center gap-4">
           <SignInButton />
+          <div className="w-full border-t border-gray-200 pt-4">
+            <Link
+              href="/todos"
+              className="block w-full rounded-lg border border-gray-300 bg-gray-50 px-4 py-3 text-center text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              📝 View Todo List
+            </Link>
+          </div>
           <p className="text-xs text-gray-400">
             Sign in with your Google account to get started.
             <br />

@@ -4,3 +4,25 @@
   color: #0066cc;
 }
 
+/* Todo list specific styles */
+.todo-item-enter {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+.todo-item-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+.todo-item-exit {
+  opacity: 1;
+}
+
+.todo-item-exit-active {
+  opacity: 0;
+  transform: translateX(20px);
+  transition: opacity 300ms, transform 300ms;
+}
+
