@@ -1,2 +1,6 @@
 @import "tailwindcss";
 
+.title {
+  color: #0066cc;
+}
+
