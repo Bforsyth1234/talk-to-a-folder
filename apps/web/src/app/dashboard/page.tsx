@@ -6,6 +6,12 @@ import { useAuth } from "@/lib/auth-context";
 import { ingestFolder, streamChat, getSavedFolders, deleteSavedFolder } from "@/lib/api-client";
 import type { IngestResponse, ChatMessage, Citation, SavedFolder, FileActionResult } from "@talk-to-a-folder/shared";
 
+interface Todo {
+  id: string;
+  text: string;
+  completed: boolean;
+}
+
 type SyncState =
   | { status: "idle" }
   | { status: "loading" }
@@ -19,7 +25,7 @@ export default function DashboardPage() {
   const [syncState, setSyncState] = useState<SyncState>({ status: "idle" });
   const [savedFolders, setSavedFolders] = useState<SavedFolder[]>([]);
   const [activeFolderId, setActiveFolderId] = useState<string | null>(null);
-  const [todos, setTodos] = useState<string[]>([]);
+  const [todos, setTodos] = useState<Todo[]>([]);
   const [newTodo, setNewTodo] = useState("");
 
   const loadFolders = useCallback(async () => {
@@ -42,7 +48,11 @@ export default function DashboardPage() {
     void loadFolders();
     const storedTodos = localStorage.getItem("todos");
     if (storedTodos) {
-      setTodos(JSON.parse(storedTodos));
+      try {
+        setTodos(JSON.parse(storedTodos));
+      } catch (e) {
+        console.error('Failed to parse todos from localStorage');
+      }
     }
   }, [loadFolders]);
 
@@ -88,13 +98,23 @@ export default function DashboardPage() {
 
   const handleAddTodo = () => {
     if (newTodo.trim()) {
-      setTodos((prev) => [...prev, newTodo]);
+      setTodos((prev) => [...prev, {
+        id: Date.now().toString(),
+        text: newTodo.trim(),
+        completed: false
+      }]);
       setNewTodo("");
     }
   };
 
-  const handleRemoveTodo = (index: number) => {
-    setTodos((prev) => prev.filter((_, i) => i !== index));
+  const handleRemoveTodo = (id: string) => {
+    setTodos((prev) => prev.filter((todo) => todo.id !== id));
+  };
+
+  const handleToggleTodo = (id: string) => {
+    setTodos((prev) => prev.map((todo) => 
+      todo.id === id ? { ...todo, completed: !todo.completed } : todo
+    ));
   };
 
   const folderId = activeFolderId;
@@ -152,7 +172,7 @@ export default function DashboardPage() {
               value={folderInput}
               onChange={(e) => setFolderInput(e.target.value)}
               placeholder="https://drive.google.com/drive/folders/... or folder ID"
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:bg-gray-50"
+              className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
               disabled={syncState.status === "loading"}
             />
             <button
@@ -256,13 +276,42 @@ export default function DashboardPage() {
           <h2 className="mb-3 text-base font-semibold text-gray-900">
             📝 Todo List
           </h2>
-          <ul>
-            {todos.map((todo, index) => (
-              <li key={index} className="flex items-center justify-between py-2">
-                <span className="text-sm">{todo}</span>
+          
+          <div className="mb-4 flex gap-3">
+            <input
+              type="text"
+              value={newTodo}
+              onChange={(e) => setNewTodo(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleAddTodo()}
+              placeholder="Add a new todo..."
+              className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
+            />
+            <button
+              type="button"
+              onClick={handleAddTodo}
+              className="rounded-lg px-5 py-2.5 text-sm font-medium text-white transition-colors bg-blue-600 hover:bg-blue-700"
+            >
+              Add
+            </button>
+          </div>
+
+          <ul className="space-y-2">
+            {todos.map((todo) => (
+              <li key={todo.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-md">
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    checked={todo.completed}
+                    onChange={() => handleToggleTodo(todo.id)}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <span className={`text-sm ${todo.completed ? 'line-through text-gray-500' : 'text-gray-900'}`}>
+                    {todo.text}
+                  </span>
+                </div>
                 <button
                   type="button"
-                  onClick={() => handleRemoveTodo(index)}
+                  onClick={() => handleRemoveTodo(todo.id)}
                   className="ml-3 rounded-md p-1.5 text-gray-400 transition-colors hover:bg-red-50 hover:text-red-600"
                 >
                   <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" strokeWidth={2} stroke="currentColor">
@@ -275,22 +324,6 @@ export default function DashboardPage() {
               </li>
             ))}
           </ul>
-          <div className="flex gap-3">
-            <input
-              type="text"
-              value={newTodo}
-              onChange={(e) => setNewTodo(e.target.value)}
-              placeholder="Add new todo"
-              className="flex-1 rounded-lg border border-gray-300 px-4 py-2.5 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 focus:outline-none"
-            />
-            <button
-              type="button"
-              onClick={handleAddTodo}
-              className="rounded-lg px-5 py-2.5 text-sm font-medium text-white transition-colors bg-blue-600 hover:bg-blue-700"
-            >
-              Add
-            </button>
-          </div>
         </section>
 
         {/* Chat section – only visible when a folder is selected */}
