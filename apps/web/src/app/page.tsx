@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { SignInButton } from "@/components/sign-in-button";
+import TodoList from "@/components/TodoList";
 
 export default function Home() {
   const { session } = useAuth();
@@ -14,6 +15,15 @@ export default function Home() {
       router.replace("/dashboard");
     }
   }, [session, router]);
+
+  // Show TodoList for authenticated users (before redirect happens)
+  if (session) {
+    return (
+      <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+        <TodoList />
+      </main>
+    );
+  }
 
   return (
     <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-slate-50 to-blue-50">
