@@ -234,15 +234,24 @@ function ResultCard({ result: r, expanded, onToggle }: {
   expanded: boolean;
   onToggle: () => void;
 }) {
-  const [copySuccess, setCopySuccess] = useState<string | null>(null);
+  const [copyState, setCopyState] = useState<{ type: 'idle' | 'success' | 'error'; label?: string }>({ type: 'idle' });
 
   const copyToClipboard = async (text: string, label: string) => {
+    // Check if clipboard API is available
+    if (!navigator.clipboard) {
+      setCopyState({ type: 'error', label });
+      setTimeout(() => setCopyState({ type: 'idle' }), 3000);
+      return;
+    }
+
     try {
       await navigator.clipboard.writeText(text);
-      setCopySuccess(label);
-      setTimeout(() => setCopySuccess(null), 2000);
+      setCopyState({ type: 'success', label });
+      setTimeout(() => setCopyState({ type: 'idle' }), 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);
+      setCopyState({ type: 'error', label });
+      setTimeout(() => setCopyState({ type: 'idle' }), 3000);
     }
   };
   return (
@@ -302,10 +311,15 @@ function ResultCard({ result: r, expanded, onToggle }: {
                   className="flex items-center gap-1 rounded-md px-2 py-1 text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-700 transition-colors"
                   title="Copy answer to clipboard"
                 >
-                  {copySuccess === 'Answer' ? (
+                  {copyState.type === 'success' && copyState.label === 'Answer' ? (
                     <>
                       <span className="text-green-600">✓</span>
                       <span className="text-green-600">Copied!</span>
+                    </>
+                  ) : copyState.type === 'error' && copyState.label === 'Answer' ? (
+                    <>
+                      <span className="text-red-600">✗</span>
+                      <span className="text-red-600">Failed</span>
                     </>
                   ) : (
                     <>
@@ -315,6 +329,11 @@ function ResultCard({ result: r, expanded, onToggle }: {
                   )}
                 </button>
               </div>
+              {copyState.type === 'error' && copyState.label === 'Answer' && (
+                <div className="mb-2 rounded-lg bg-red-50 px-3 py-2 text-xs text-red-800">
+                  Failed to copy to clipboard. Your browser may not support this feature or clipboard access may be blocked.
+                </div>
+              )}
               <pre className="max-h-40 overflow-auto rounded-lg bg-gray-50 p-3 text-xs text-gray-700 whitespace-pre-wrap">{r.answer}</pre>
             </div>
           )}
