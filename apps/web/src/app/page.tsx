@@ -55,9 +55,11 @@ export default function Home() {
             </div>
           </div>
         ) : (
-          <div className="w-full max-w-7xl space-y-8">
-            {/* Todo List Section */}
-            <TodoList />
+          <div className="w-full max-w-md rounded-2xl bg-white p-10 shadow-lg">
+            <div className="flex flex-col items-center gap-4">
+              <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-600 border-t-transparent"></div>
+              <p className="text-gray-600">Redirecting to dashboard...</p>
+            </div>
           </div>
         )}
       </div>
