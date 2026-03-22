@@ -48,19 +48,19 @@ const TodoList = () => {
         completed: false,
         createdAt: new Date().toISOString()
       };
-      setTodos([...todos, newTodo]);
+      setTodos(prev => [...prev, newTodo]);
       setInputValue('');
     }
   };
 
   const toggleTodo = (id: number) => {
-    setTodos(todos.map(todo =>
+    setTodos(prev => prev.map(todo =>
       todo.id === id ? { ...todo, completed: !todo.completed } : todo
     ));
   };
 
   const deleteTodo = (id: number) => {
-    setTodos(todos.filter(todo => todo.id !== id));
+    setTodos(prev => prev.filter(todo => todo.id !== id));
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
