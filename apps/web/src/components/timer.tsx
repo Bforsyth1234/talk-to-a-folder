@@ -9,31 +9,29 @@ interface TimerProps {
 export function Timer({ className = "" }: TimerProps) {
   const [time, setTime] = useState(0); // time in milliseconds
   const [isRunning, setIsRunning] = useState(false);
-  const intervalRef = useRef<NodeJS.Timeout | null>(null);
+  const startTimeRef = useRef<number | null>(null);
 
   useEffect(() => {
     if (isRunning) {
-      intervalRef.current = setInterval(() => {
-        setTime(prevTime => prevTime + 10);
+      const intervalId = setInterval(() => {
+        if (startTimeRef.current !== null) {
+          const elapsedTime = Date.now() - startTimeRef.current;
+          setTime(elapsedTime);
+        }
       }, 10);
-    } else {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
+      return () => clearInterval(intervalId);
     }
-
-    return () => {
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
-      }
-    };
   }, [isRunning]);
 
-  const handleStart = () => setIsRunning(true);
+  const handleStart = () => {
+    setIsRunning(true);
+    startTimeRef.current = Date.now();
+  };
   const handleStop = () => setIsRunning(false);
   const handleReset = () => {
     setTime(0);
     setIsRunning(false);
+    startTimeRef.current = null;
   };
 
   const formatTime = (milliseconds: number): string => {
