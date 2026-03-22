@@ -33,6 +33,14 @@ export default function Home() {
 
         <div className="flex flex-col items-center gap-4">
           <SignInButton />
+          <div className="w-full border-t border-gray-200 pt-4">
+            <a
+              href="/todos"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg border border-gray-300 bg-white px-6 py-3 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              ✓ View Todos
+            </a>
+          </div>
           <p className="text-xs text-gray-400">
             Sign in with your Google account to get started.
             <br />
