@@ -10,12 +10,14 @@ export function Timer() {
       <div className="font-mono text-lg font-semibold">{formattedTime}</div>
       <div className="flex gap-2">
         <button
+          type="button"
           onClick={toggle}
           className="rounded-md bg-white/20 px-3 py-1 text-sm font-medium transition-colors hover:bg-white/30"
         >
           {isRunning ? "Pause" : "Start"}
         </button>
         <button
+          type="button"
           onClick={reset}
           className="rounded-md bg-white/20 px-3 py-1 text-sm font-medium transition-colors hover:bg-white/30"
         >
