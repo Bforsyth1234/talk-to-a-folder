@@ -4,17 +4,34 @@ import { useState, useEffect, useRef } from "react";
 
 interface TimerProps {
   className?: string;
+  mode?: "countup" | "countdown";
+  initialTime?: number; // in seconds, used for countdown mode
 }
 
-export function Timer({ className = "" }: TimerProps) {
-  const [time, setTime] = useState(0);
+export function Timer({ 
+  className = "", 
+  mode = "countup", 
+  initialTime = 0 
+}: TimerProps) {
+  const [time, setTime] = useState(mode === "countdown" ? initialTime : 0);
   const [isRunning, setIsRunning] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = setInterval(() => {
-        setTime((prevTime) => prevTime + 1);
+        setTime((prevTime) => {
+          if (mode === "countdown") {
+            const newTime = prevTime - 1;
+            if (newTime <= 0) {
+              setIsRunning(false);
+              return 0;
+            }
+            return newTime;
+          } else {
+            return prevTime + 1;
+          }
+        });
       }, 1000);
     } else {
       if (intervalRef.current) {
@@ -27,7 +44,7 @@ export function Timer({ className = "" }: TimerProps) {
         clearInterval(intervalRef.current);
       }
     };
-  }, [isRunning]);
+  }, [isRunning, mode]);
 
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
@@ -43,7 +60,7 @@ export function Timer({ className = "" }: TimerProps) {
   const handlePause = () => setIsRunning(false);
   const handleReset = () => {
     setIsRunning(false);
-    setTime(0);
+    setTime(mode === "countdown" ? initialTime : 0);
   };
 
   return (
