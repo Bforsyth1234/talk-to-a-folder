@@ -1,9 +1,10 @@
+import type { ReactNode } from 'react';
 import { Navigation } from '@/components/Navigation';
 
 export default function TodosLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: ReactNode;
 }) {
   return (
     <>
