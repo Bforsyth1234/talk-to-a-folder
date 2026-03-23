@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 import { getSavedFolders, getEvalTests, runEvalStream } from "@/lib/api-client";
@@ -235,12 +235,26 @@ function ResultCard({ result: r, expanded, onToggle }: {
   onToggle: () => void;
 }) {
   const [copySuccess, setCopySuccess] = useState(false);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const copyToClipboard = async (text: string) => {
     try {
+      // Clear any existing timeout
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+      
       await navigator.clipboard.writeText(text);
       setCopySuccess(true);
-      setTimeout(() => setCopySuccess(false), 2000);
+      timeoutRef.current = setTimeout(() => setCopySuccess(false), 2000);
     } catch (err) {
       console.error('Failed to copy text: ', err);
     }
