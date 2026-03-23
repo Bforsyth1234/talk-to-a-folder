@@ -6,14 +6,14 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function TodosPage() {
-  const { session } = useAuth();
+  const { session, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!session) {
+    if (!isLoading && !session) {
       router.replace('/');
     }
-  }, [session, router]);
+  }, [session, isLoading, router]);
 
   if (!session) {
     return null;
