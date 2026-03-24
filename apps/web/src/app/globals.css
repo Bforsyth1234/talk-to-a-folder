@@ -1,6 +1,47 @@
 @import "tailwindcss";
 
+:root {
+  /* Primary colors - Deep purples */
+  --primary-50: #faf7ff;
+  --primary-100: #f3ebff;
+  --primary-200: #e9d5ff;
+  --primary-300: #d8b4fe;
+  --primary-400: #c084fc;
+  --primary-500: #a855f7;  /* Main primary */
+  --primary-600: #9333ea;
+  --primary-700: #7c3aed;
+  --primary-800: #6b21a8;
+  --primary-900: #581c87;
+
+  /* Secondary colors - Warm browns */
+  --secondary-50: #fefdf8;
+  --secondary-100: #fef3c7;
+  --secondary-200: #fde68a;
+  --secondary-300: #fcd34d;
+  --secondary-400: #fbbf24;
+  --secondary-500: #d97706;  /* Main secondary */
+  --secondary-600: #b45309;
+  --secondary-700: #92400e;
+  --secondary-800: #78350f;
+  --secondary-900: #451a03;
+
+  /* Accent colors */
+  --accent: #dda0dd;        /* Light plum */
+  --accent-dark: #8b4513;   /* Saddle brown */
+
+  /* Background colors */
+  --bg-primary: #faf7ff;    /* Very light purple */
+  --bg-secondary: #fefdf8;  /* Very light brown */
+  --bg-dark: #581c87;       /* Dark purple */
+
+  /* Text colors */
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --text-on-primary: #ffffff;
+  --text-on-dark: #faf7ff;
+}
+
 .title {
-  color: #0066cc;
+  color: var(--primary-600);
 }
 
