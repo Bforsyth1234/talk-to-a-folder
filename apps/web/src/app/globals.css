@@ -1,6 +1,29 @@
 @import "tailwindcss";
 
+/* Custom CSS Variables for Yellow and Purple Theme */
+:root {
+  /* Primary Colors (Purple) */
+  --color-primary: #6B46C1;        /* Medium purple */
+  --color-primary-light: #A78BFA;   /* Light purple */
+  --color-primary-dark: #4C1D95;    /* Dark purple */
+  --color-primary-50: #F5F3FF;      /* Very light purple */
+  --color-primary-100: #EDE9FE;     /* Light purple tint */
+  --color-primary-900: #312E81;     /* Very dark purple */
+
+  /* Secondary Colors (Yellow) */
+  --color-secondary: #F59E0B;       /* Medium yellow/amber */
+  --color-secondary-light: #FCD34D; /* Light yellow */
+  --color-secondary-dark: #D97706;  /* Dark yellow/amber */
+  --color-secondary-50: #FFFBEB;    /* Very light yellow */
+  --color-secondary-100: #FEF3C7;   /* Light yellow tint */
+  --color-secondary-900: #92400E;   /* Very dark yellow */
+
+  /* Accent Colors */
+  --color-accent: #8B5CF6;          /* Purple accent */
+  --color-accent-secondary: #FBBF24; /* Yellow accent */
+}
+
 .title {
-  color: #0066cc;
+  color: var(--color-primary);
 }
 
