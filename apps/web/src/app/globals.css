@@ -2,24 +2,67 @@
 
 /* Custom CSS variables for purple and yellow theme */
 :root {
-  /* Purple shades */
-  --primary-color: #6B46C1;        /* Purple 700 */
-  --primary-light: #A78BFA;        /* Purple 400 */
-  --primary-dark: #4C1D95;         /* Purple 900 */
+  /* Purple variants */
+  --primary-purple-50: #f3e8ff;
+  --primary-purple-100: #e9d5ff;
+  --primary-purple-200: #d8b4fe;
+  --primary-purple-300: #c084fc;
+  --primary-purple-400: #a78bfa;
+  --primary-purple-500: #a855f7;
+  --primary-purple-600: #9333ea;
+  --primary-purple-700: #7c3aed;
+  --primary-purple-800: #6b21a8;
+  --primary-purple-900: #581c87;
+
+  /* Yellow variants */
+  --accent-yellow-50: #fefce8;
+  --accent-yellow-100: #fef9c3;
+  --accent-yellow-200: #fef08a;
+  --accent-yellow-300: #fde047;
+  --accent-yellow-400: #facc15;
+  --accent-yellow-500: #eab308;
+  --accent-yellow-600: #ca8a04;
+  --accent-yellow-700: #a16207;
+  --accent-yellow-800: #854d0e;
+  --accent-yellow-900: #713f12;
   
-  /* Yellow shades */
-  --secondary-color: #F59E0B;      /* Amber 500 */
-  --secondary-light: #FCD34D;      /* Amber 300 */
-  --secondary-dark: #D97706;       /* Amber 600 */
+  /* Primary colors - Purple theme */
+  --color-primary: var(--primary-purple-600);
+  --color-primary-light: var(--primary-purple-300);
+  --color-primary-dark: var(--primary-purple-800);
   
-  /* Supporting colors */
-  --accent-color: #8B5CF6;         /* Purple 500 */
-  --background-color: #FAF5FF;     /* Purple 50 */
-  --text-color: #1F2937;           /* Gray 800 for contrast */
-  --text-light: #6B7280;           /* Gray 500 */
+  /* Accent colors - Yellow theme */
+  --color-accent: var(--accent-yellow-400);
+  --color-accent-light: var(--accent-yellow-200);
+  --color-accent-dark: var(--accent-yellow-600);
+  
+  /* UI state colors */
+  --color-background: var(--primary-purple-50);
+  --color-surface: #ffffff;
+  --color-text-primary: var(--primary-purple-900);
+  --color-text-secondary: var(--primary-purple-700);
+  --color-border: var(--primary-purple-200);
+  
+  /* Interactive elements */
+  --color-button-primary: var(--primary-purple-600);
+  --color-button-primary-hover: var(--primary-purple-700);
+  --color-button-secondary: var(--accent-yellow-400);
+  --color-button-secondary-hover: var(--accent-yellow-500);
+  
+  /* Legacy mappings for backward compatibility */
+  --primary-color: var(--color-primary);
+  --primary-light: var(--color-primary-light);
+  --primary-dark: var(--color-primary-dark);
+  --secondary-color: var(--color-accent);
+  --secondary-light: var(--color-accent-light);
+  --secondary-dark: var(--color-accent-dark);
+  --accent-color: var(--primary-purple-500);
+  --background-color: var(--color-background);
+  --text-color: var(--color-text-primary);
+  --text-light: var(--color-text-secondary);
 }
 
 .title {
-  color: var(--primary-color);
+  color: var(--color-primary);
 }
 
