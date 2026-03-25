@@ -74,38 +74,38 @@ export default function EvalPage() {
   const categories = [...new Set(tests.map((t) => t.category))];
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="border-b border-gray-200 bg-white px-6 py-3">
+    <div className="min-h-screen bg-black">
+      <header className="border-b border-yellow-500/20 bg-zinc-900 px-6 py-3">
         <div className="mx-auto flex max-w-6xl items-center justify-between">
           <div className="flex items-center gap-4">
-            <h1 className="text-base font-semibold title text-gray-900">🧪 Eval Dashboard</h1>
-            <a href="/dashboard" className="text-xs text-blue-600 hover:underline">← Back to app</a>
+            <h1 className="text-base font-semibold title">🧪 Eval Dashboard</h1>
+            <a href="/dashboard" className="text-xs text-yellow-500 hover:text-yellow-400 hover:underline">← Back to app</a>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs text-gray-600">{session.name ?? session.email}</span>
-            <button onClick={signOut} className="rounded-md border border-gray-300 px-3 py-1.5 text-xs text-gray-600 hover:bg-gray-50">Sign out</button>
+            <span className="text-xs text-gray-400">{session.name ?? session.email}</span>
+            <button onClick={signOut} className="rounded-md border border-yellow-500/50 px-3 py-1.5 text-xs text-yellow-500 hover:bg-yellow-500/10">Sign out</button>
           </div>
         </div>
       </header>
 
       <main className="mx-auto max-w-6xl px-6 py-6">
         {/* Controls */}
-        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-xl border border-yellow-500/20 bg-zinc-900 p-6 shadow-sm">
           <div className="flex flex-wrap items-end gap-4">
             <div className="flex-1 min-w-[200px]">
-              <label className="mb-1 block text-xs font-medium text-gray-700">Folder</label>
+              <label className="mb-1 block text-xs font-medium text-gray-300">Folder</label>
               <select value={selectedFolder} onChange={(e) => setSelectedFolder(e.target.value)}
-                className="w-full rounded-lg border border-gray-300 px-3 py-2 text-xs">
+                className="w-full rounded-lg border border-yellow-500/30 bg-black px-3 py-2 text-xs text-white">
                 {folders.map((f) => (
                   <option key={f.folderId} value={f.folderId}>{f.name} ({f.fileCount} files)</option>
                 ))}
               </select>
             </div>
             <button onClick={handleRun} disabled={runState.status === "running" || !selectedFolder || selectedTests.size === 0}
-              className={`rounded-lg px-6 py-2 text-xs font-medium text-white transition-colors ${
-                runState.status === "running" ? "bg-amber-500 cursor-wait" :
-                !selectedFolder || selectedTests.size === 0 ? "bg-gray-400 cursor-not-allowed" :
-                "bg-blue-600 hover:bg-blue-700"
+              className={`rounded-lg px-6 py-2 text-xs font-medium transition-colors ${
+                runState.status === "running" ? "bg-yellow-600 text-black cursor-wait" :
+                !selectedFolder || selectedTests.size === 0 ? "bg-gray-700 text-gray-400 cursor-not-allowed" :
+                "bg-yellow-500 text-black hover:bg-yellow-600"
               }`}>
               {runState.status === "running" ? "⏳ Running…" : `▶ Run ${selectedTests.size} test${selectedTests.size !== 1 ? "s" : ""}`}
             </button>
@@ -113,21 +113,21 @@ export default function EvalPage() {
         </div>
 
         {/* Test selection */}
-        <div className="mb-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+        <div className="mb-6 rounded-xl border border-yellow-500/20 bg-zinc-900 p-6 shadow-sm">
           <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-gray-900">Test Cases</h2>
-            <button onClick={toggleAll} className="text-xs text-blue-600 hover:underline">
+            <h2 className="text-sm font-semibold text-white">Test Cases</h2>
+            <button onClick={toggleAll} className="text-xs text-yellow-500 hover:text-yellow-400 hover:underline">
               {selectedTests.size === tests.length ? "Deselect all" : "Select all"}
             </button>
           </div>
           {categories.map((cat) => (
             <div key={cat} className="mb-4">
-              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">{cat.replace("_", " ")}</h3>
+              <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-400">{cat.replace("_", " ")}</h3>
               <div className="space-y-1">
                 {tests.filter((t) => t.category === cat).map((t) => (
-                  <label key={t.id} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs hover:bg-gray-50 cursor-pointer">
-                    <input type="checkbox" checked={selectedTests.has(t.id)} onChange={() => toggleTest(t.id)} className="rounded" />
-                    <span className="font-medium text-gray-800">{t.name}</span>
+                  <label key={t.id} className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs hover:bg-yellow-500/10 cursor-pointer">
+                    <input type="checkbox" checked={selectedTests.has(t.id)} onChange={() => toggleTest(t.id)} className="rounded accent-yellow-500" />
+                    <span className="font-medium text-white">{t.name}</span>
                     <span className="text-gray-400">— {t.description}</span>
                   </label>
                 ))}
@@ -138,7 +138,7 @@ export default function EvalPage() {
 
         {/* Results */}
         {runState.status === "error" && (
-          <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-xs text-red-800">{runState.message}</div>
+          <div className="mb-6 rounded-xl border border-red-500/50 bg-red-500/10 p-4 text-xs text-red-400">{runState.message}</div>
         )}
         {(runState.status === "running" || runState.status === "done") && (
           <EvalResults
@@ -187,7 +187,7 @@ function EvalResults({ results, totalExpected, isStreaming, expandedTest, setExp
   return (
     <div className="space-y-4">
       {/* Summary bar */}
-      <div className="rounded-xl border border-gray-200 bg-white p-6 shadow-sm">
+      <div className="rounded-xl border border-yellow-500/20 bg-zinc-900 p-6 shadow-sm">
         <div className="flex items-center gap-6">
           <div className={`text-2xl font-bold ${pct === 100 ? "text-green-600" : pct >= 70 ? "text-amber-600" : "text-red-600"}`}>
             {isStreaming ? `${results.length}/${totalExpected}` : `${pct}%`}
@@ -196,10 +196,10 @@ function EvalResults({ results, totalExpected, isStreaming, expandedTest, setExp
             <div className="mb-2 flex gap-4 text-xs">
               <span className="text-green-700">✅ {passedTests} passed</span>
               <span className="text-red-700">❌ {failedTests} failed</span>
-              <span className="text-gray-500">{results.length}{isStreaming ? ` / ${totalExpected}` : ""} total</span>
-              {isStreaming && <span className="animate-pulse text-amber-600">⏳ Running…</span>}
+              <span className="text-gray-400">{results.length}{isStreaming ? ` / ${totalExpected}` : ""} total</span>
+              {isStreaming && <span className="animate-pulse text-yellow-500">⏳ Running…</span>}
             </div>
-            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-200">
+            <div className="h-2 w-full overflow-hidden rounded-full bg-gray-700">
               <div className="h-full rounded-full bg-green-500 transition-all" style={{ width: `${isStreaming ? (results.length / totalExpected) * 100 : pct}%` }} />
             </div>
           </div>
@@ -212,7 +212,7 @@ function EvalResults({ results, totalExpected, isStreaming, expandedTest, setExp
         {/* Average LLM Judge Scores */}
         {avgJudge && (
           <div className="mt-4 flex gap-6 border-t border-gray-100 pt-4">
-            <div className="text-xs font-semibold uppercase text-gray-500">LLM Judge Avg ({avgJudge.count} tests)</div>
+            <div className="text-xs font-semibold uppercase text-gray-400">LLM Judge Avg ({avgJudge.count} tests)</div>
             <ScoreBadge label="Correctness" score={avgJudge.correctness} />
             <ScoreBadge label="Faithfulness" score={avgJudge.faithfulness} />
             <ScoreBadge label="Completeness" score={avgJudge.completeness} />
@@ -235,12 +235,12 @@ function ResultCard({ result: r, expanded, onToggle }: {
   onToggle: () => void;
 }) {
   return (
-    <div className={`rounded-xl border bg-white shadow-sm overflow-hidden ${r.passed ? "border-green-200" : "border-red-200"}`}>
-      <button onClick={onToggle} className="flex w-full items-center gap-3 px-5 py-3 text-left hover:bg-gray-50">
+    <div className={`rounded-xl border shadow-sm overflow-hidden ${r.passed ? "border-green-500/50 bg-green-500/5" : "border-red-500/50 bg-red-500/5"}`}>
+      <button onClick={onToggle} className="flex w-full items-center gap-3 px-5 py-3 text-left hover:bg-yellow-500/10">
         <span className="text-base">{r.passed ? "✅" : "❌"}</span>
         <div className="flex-1">
-          <span className="font-medium text-gray-900">{r.testName}</span>
-          <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-500">{r.category}</span>
+          <span className="font-medium text-white">{r.testName}</span>
+          <span className="ml-2 rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs text-yellow-500">{r.category}</span>
         </div>
         {r.judgeScores && (
           <div className="flex gap-2">
@@ -253,16 +253,16 @@ function ResultCard({ result: r, expanded, onToggle }: {
         <span className="text-gray-400">{expanded ? "▲" : "▼"}</span>
       </button>
       {expanded && (
-        <div className="border-t border-gray-100 px-5 py-4 space-y-3">
+        <div className="border-t border-yellow-500/10 px-5 py-4 space-y-3">
           {/* Assertions */}
           <div>
-            <h4 className="mb-1 text-xs font-semibold uppercase text-gray-500">Assertions</h4>
+            <h4 className="mb-1 text-xs font-semibold uppercase text-gray-400">Assertions</h4>
             <div className="space-y-1">
               {r.assertions.map((a, i) => (
-                <div key={i} className={`flex items-start gap-2 rounded-lg px-3 py-1.5 text-xs ${a.passed ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+                <div key={i} className={`flex items-start gap-2 rounded-lg px-3 py-1.5 text-xs ${a.passed ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}>
                   <span>{a.passed ? "✓" : "✗"}</span>
                   <span className="font-mono text-xs">{a.name}</span>
-                  <span className="text-gray-600">— {a.detail}</span>
+                  <span className="text-gray-400">— {a.detail}</span>
                 </div>
               ))}
             </div>
@@ -270,31 +270,31 @@ function ResultCard({ result: r, expanded, onToggle }: {
           {/* LLM Judge Scores */}
           {r.judgeScores && (
             <div>
-              <h4 className="mb-1 text-xs font-semibold uppercase text-gray-500">LLM Judge Scores</h4>
+              <h4 className="mb-1 text-xs font-semibold uppercase text-gray-400">LLM Judge Scores</h4>
               <div className="flex gap-4">
                 <ScoreBadge label="Correctness" score={r.judgeScores.correctness} />
                 <ScoreBadge label="Faithfulness" score={r.judgeScores.faithfulness} />
                 <ScoreBadge label="Completeness" score={r.judgeScores.completeness} />
               </div>
               {r.judgeScores.reason && (
-                <p className="mt-2 rounded-lg bg-gray-50 px-3 py-2 text-xs text-gray-600 italic">{r.judgeScores.reason}</p>
+                <p className="mt-2 rounded-lg bg-zinc-800 px-3 py-2 text-xs text-gray-300 italic">{r.judgeScores.reason}</p>
               )}
             </div>
           )}
           {/* Answer preview */}
           {r.answer && (
             <div>
-              <h4 className="mb-1 text-xs font-semibold uppercase text-gray-500">Answer</h4>
-              <pre className="max-h-40 overflow-auto rounded-lg bg-gray-50 p-3 text-xs text-gray-700 whitespace-pre-wrap">{r.answer}</pre>
+              <h4 className="mb-1 text-xs font-semibold uppercase text-gray-400">Answer</h4>
+              <pre className="max-h-40 overflow-auto rounded-lg bg-zinc-800 p-3 text-xs text-gray-300 whitespace-pre-wrap">{r.answer}</pre>
             </div>
           )}
           {/* Citations */}
           {r.citationFiles.length > 0 && (
             <div>
-              <h4 className="mb-1 text-xs font-semibold uppercase text-gray-500">Citations ({r.citationCount})</h4>
+              <h4 className="mb-1 text-xs font-semibold uppercase text-gray-400">Citations ({r.citationCount})</h4>
               <div className="flex flex-wrap gap-1">
                 {r.citationFiles.map((f, i) => (
-                  <span key={i} className="rounded-full bg-blue-50 px-2 py-0.5 text-xs text-blue-700">{f}</span>
+                  <span key={i} className="rounded-full bg-yellow-500/20 px-2 py-0.5 text-xs text-yellow-500">{f}</span>
                 ))}
               </div>
             </div>
@@ -302,10 +302,10 @@ function ResultCard({ result: r, expanded, onToggle }: {
           {/* File actions */}
           {r.fileActions && r.fileActions.length > 0 && (
             <div>
-              <h4 className="mb-1 text-xs font-semibold uppercase text-gray-500">File Actions</h4>
+              <h4 className="mb-1 text-xs font-semibold uppercase text-gray-400">File Actions</h4>
               <div className="space-y-1">
                 {r.fileActions.map((fa, i) => (
-                  <div key={i} className={`rounded-lg px-3 py-1.5 text-xs ${fa.success ? "bg-green-50 text-green-800" : "bg-red-50 text-red-800"}`}>
+                  <div key={i} className={`rounded-lg px-3 py-1.5 text-xs ${fa.success ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"}`}>
                     {fa.success ? "✅" : "❌"} {fa.action} — {fa.fileName}
                   </div>
                 ))}
@@ -314,7 +314,7 @@ function ResultCard({ result: r, expanded, onToggle }: {
           )}
           {/* Error */}
           {r.error && (
-            <div className="rounded-lg bg-red-50 px-3 py-2 text-xs text-red-800">
+            <div className="rounded-lg bg-red-500/10 px-3 py-2 text-xs text-red-400">
               <strong>Error:</strong> {r.error}
             </div>
           )}
@@ -325,10 +325,10 @@ function ResultCard({ result: r, expanded, onToggle }: {
 }
 
 function scoreColor(score: number): string {
-  if (score >= 4.5) return "text-green-700 bg-green-50";
-  if (score >= 3.5) return "text-blue-700 bg-blue-50";
-  if (score >= 2.5) return "text-amber-700 bg-amber-50";
-  return "text-red-700 bg-red-50";
+  if (score >= 4.5) return "text-green-400 bg-green-500/10";
+  if (score >= 3.5) return "text-yellow-400 bg-yellow-500/10";
+  if (score >= 2.5) return "text-amber-400 bg-amber-500/10";
+  return "text-red-400 bg-red-500/10";
 }
 
 function ScoreBadge({ label, score }: { label: string; score: number }) {
