@@ -1,6 +1,25 @@
 @import "tailwindcss";
 
+/* Custom CSS variables for purple and yellow theme */
+:root {
+  /* Purple shades */
+  --primary-color: #6B46C1;        /* Purple 700 */
+  --primary-light: #A78BFA;        /* Purple 400 */
+  --primary-dark: #4C1D95;         /* Purple 900 */
+  
+  /* Yellow shades */
+  --secondary-color: #F59E0B;      /* Amber 500 */
+  --secondary-light: #FCD34D;      /* Amber 300 */
+  --secondary-dark: #D97706;       /* Amber 600 */
+  
+  /* Supporting colors */
+  --accent-color: #8B5CF6;         /* Purple 500 */
+  --background-color: #FAF5FF;     /* Purple 50 */
+  --text-color: #1F2937;           /* Gray 800 for contrast */
+  --text-light: #6B7280;           /* Gray 500 */
+}
+
 .title {
-  color: #0066cc;
+  color: var(--primary-color);
 }
 
